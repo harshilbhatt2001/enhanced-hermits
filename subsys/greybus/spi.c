@@ -230,10 +230,10 @@ static int request_to_spi_config(const struct gb_spi_transfer_request *const req
     }
 
     if (request->mode & GB_SPI_MODE_NO_CS) {
-		if (spi_config->cs != NULL) {
+		// if (spi_config->cs != NULL) {
 			/* LOG_DBG("GB_SPI_MODE_NO_CS flag given but spi_config->cs is "
 				"non-NULL (%p)", spi_config->cs); */
-		}
+		// }
 	}
 
     if (request->mode & GB_SPI_MODE_READY) {
@@ -250,9 +250,10 @@ static int request_to_spi_config(const struct gb_spi_transfer_request *const req
     }
 
     if (!api->get_cs_control(gb_spidev, request->chip_select, ctrl)) {
-        spi_config->cs = ctrl;
+        //spi_config->cs = ctrl;
+        memcpy(&spi_config->cs, ctrl, sizeof(struct spi_cs_control));
     } else {
-        spi_config->cs = NULL;
+        // spi_config->cs = NULL;
     }
 
     return 0;
