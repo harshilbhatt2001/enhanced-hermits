@@ -6,7 +6,7 @@
 
 menuconfig GREYBUS
 	bool "Greybus"
-  depends on DYNAMIC_PTHREAD_STACKS
+  depends on PTHREAD_DYNAMIC_STACKS
 	depends on PTHREAD_IPC
 	help
 	  This option enables Greybus support.
