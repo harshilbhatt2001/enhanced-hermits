@@ -57,7 +57,7 @@ extern int pthread_setname_np(pthread_t thread, const char *name);
 #include <zephyr/posix/pthread.h>
 #include <zephyr/posix/semaphore.h>
 
-#define DEFAULT_STACK_SIZE      2048
+#define DEFAULT_STACK_SIZE      CONFIG_PTHREAD_DYNAMIC_STACK_DEFAULT_SIZE
 
 void qsort(void *base, size_t nmemb, size_t size,
                   int (*compar)(const void *, const void *));
