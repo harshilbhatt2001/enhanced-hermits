@@ -50,17 +50,17 @@ LOG_MODULE_REGISTER(greybus_pwm, CONFIG_GREYBUS_LOG_LEVEL);
 #define GB_PWM_VERSION_MINOR 1
 
 struct gb_pwm_info {
-    /** assigned CPort number */
-    uint16_t        cport;
+	/** assigned CPort number */
+	uint16_t cport;
 
-    /** device type for this device */
-    char            *dev_type;
+	/** device type for this device */
+	char *dev_type;
 
-    /** Id for device in device table */
-    uint16_t        dev_id;
+	/** Id for device in device table */
+	uint16_t dev_id;
 
-    /** the number of generator supported */
-    uint16_t        num_pwms;
+	/** the number of generator supported */
+	uint16_t num_pwms;
 };
 
 /**
@@ -74,16 +74,16 @@ struct gb_pwm_info {
  */
 static uint8_t gb_pwm_protocol_version(struct gb_operation *operation)
 {
-    struct gb_pwm_version_response *response;
+	struct gb_pwm_version_response *response;
 
-    response = gb_operation_alloc_response(operation, sizeof(*response));
-    if (!response) {
-        return GB_OP_NO_MEMORY;
-    }
+	response = gb_operation_alloc_response(operation, sizeof(*response));
+	if (!response) {
+		return GB_OP_NO_MEMORY;
+	}
 
-    response->major = GB_PWM_VERSION_MAJOR;
-    response->minor = GB_PWM_VERSION_MINOR;
-    return GB_OP_SUCCESS;
+	response->major = GB_PWM_VERSION_MAJOR;
+	response->minor = GB_PWM_VERSION_MINOR;
+	return GB_OP_SUCCESS;
 }
 
 /**
@@ -98,51 +98,50 @@ static uint8_t gb_pwm_protocol_version(struct gb_operation *operation)
  */
 static uint8_t gb_pwm_protocol_count(struct gb_operation *operation)
 {
-    struct gb_pwm_info *pwm_info;
-    struct gb_pwm_count_response *response;
-    struct gb_bundle *bundle;
-    uint16_t count = 0;
-    int ret;
+	struct gb_pwm_info *pwm_info;
+	struct gb_pwm_count_response *response;
+	struct gb_bundle *bundle;
+	uint16_t count = 0;
+	int ret;
 
-    bundle = gb_operation_get_bundle(operation);
-    DEBUGASSERT(bundle);
+	bundle = gb_operation_get_bundle(operation);
+	DEBUGASSERT(bundle);
 
-    pwm_info = bundle->priv;
+	pwm_info = bundle->priv;
 
-    if (!pwm_info || !bundle->dev) {
-        return GB_OP_UNKNOWN_ERROR;
-    }
+	if (!pwm_info || !bundle->dev) {
+		return GB_OP_UNKNOWN_ERROR;
+	}
 
-    response = gb_operation_alloc_response(operation, sizeof(*response));
-    if (!response) {
-        return GB_OP_NO_MEMORY;
-    }
+	response = gb_operation_alloc_response(operation, sizeof(*response));
+	if (!response) {
+		return GB_OP_NO_MEMORY;
+	}
 
-    ret = device_pwm_get_count(bundle->dev, &count);
-    if (ret) {
-        LOG_INF("%s(): %x error in ops", __func__, ret);
-        return GB_OP_UNKNOWN_ERROR;
-    }
+	ret = device_pwm_get_count(bundle->dev, &count);
+	if (ret) {
+		LOG_INF("%s(): %x error in ops", __func__, ret);
+		return GB_OP_UNKNOWN_ERROR;
+	}
 
-    if (count == 0 || count > 256) {
-        return GB_OP_UNKNOWN_ERROR;
-    }
+	if (count == 0 || count > 256) {
+		return GB_OP_UNKNOWN_ERROR;
+	}
 
-    /*
-     * Store the number of generator supported in hardware. The num_pwms is for
-     * checking whether specific generator number is valid in hardware or not
-     * before pass it to device driver.
-     */
-    pwm_info->num_pwms = count;
+	/*
+	 * Store the number of generator supported in hardware. The num_pwms is for
+	 * checking whether specific generator number is valid in hardware or not
+	 * before pass it to device driver.
+	 */
+	pwm_info->num_pwms = count;
 
+	/*
+	 * Per Greybus specification, the number of generators supported should be
+	 * one less than the actual number.
+	 */
+	response->count = (uint8_t)count - 1;
 
-    /*
-     * Per Greybus specification, the number of generators supported should be
-     * one less than the actual number.
-     */
-    response->count = (uint8_t)count -1;
-
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 /**
@@ -157,38 +156,38 @@ static uint8_t gb_pwm_protocol_count(struct gb_operation *operation)
  */
 static uint8_t gb_pwm_protocol_activate(struct gb_operation *operation)
 {
-    struct gb_pwm_info *pwm_info;
-    struct gb_pwm_activate_request *request;
-    struct gb_bundle *bundle;
-    int ret;
+	struct gb_pwm_info *pwm_info;
+	struct gb_pwm_activate_request *request;
+	struct gb_bundle *bundle;
+	int ret;
 
-    if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
-        LOG_ERR("dropping short message");
-        return GB_OP_INVALID;
-    }
+	if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
+		LOG_ERR("dropping short message");
+		return GB_OP_INVALID;
+	}
 
-    bundle = gb_operation_get_bundle(operation);
-    DEBUGASSERT(bundle);
+	bundle = gb_operation_get_bundle(operation);
+	DEBUGASSERT(bundle);
 
-    pwm_info = bundle->priv;
+	pwm_info = bundle->priv;
 
-    if (!pwm_info || !bundle->dev) {
-        return GB_OP_UNKNOWN_ERROR;
-    }
+	if (!pwm_info || !bundle->dev) {
+		return GB_OP_UNKNOWN_ERROR;
+	}
 
-    request = gb_operation_get_request_payload(operation);
+	request = gb_operation_get_request_payload(operation);
 
-    if (request->which >= pwm_info->num_pwms) {
-        return GB_OP_INVALID;
-    }
+	if (request->which >= pwm_info->num_pwms) {
+		return GB_OP_INVALID;
+	}
 
-    ret = device_pwm_activate(bundle->dev, request->which);
-    if (ret) {
-        LOG_INF("%s(): %x error in ops", __func__, ret);
-        return GB_OP_UNKNOWN_ERROR;
-    }
+	ret = device_pwm_activate(bundle->dev, request->which);
+	if (ret) {
+		LOG_INF("%s(): %x error in ops", __func__, ret);
+		return GB_OP_UNKNOWN_ERROR;
+	}
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 /**
@@ -203,38 +202,38 @@ static uint8_t gb_pwm_protocol_activate(struct gb_operation *operation)
  */
 static uint8_t gb_pwm_protocol_deactivate(struct gb_operation *operation)
 {
-    struct gb_pwm_info *pwm_info;
-    struct gb_pwm_dectivate_request *request;
-    struct gb_bundle *bundle;
-    int ret;
+	struct gb_pwm_info *pwm_info;
+	struct gb_pwm_dectivate_request *request;
+	struct gb_bundle *bundle;
+	int ret;
 
-    if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
-        LOG_ERR("dropping short message");
-        return GB_OP_INVALID;
-    }
+	if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
+		LOG_ERR("dropping short message");
+		return GB_OP_INVALID;
+	}
 
-    bundle = gb_operation_get_bundle(operation);
-    DEBUGASSERT(bundle);
+	bundle = gb_operation_get_bundle(operation);
+	DEBUGASSERT(bundle);
 
-    pwm_info = bundle->priv;
+	pwm_info = bundle->priv;
 
-    if (!pwm_info || !bundle->dev) {
-        return GB_OP_UNKNOWN_ERROR;
-    }
+	if (!pwm_info || !bundle->dev) {
+		return GB_OP_UNKNOWN_ERROR;
+	}
 
-    request = gb_operation_get_request_payload(operation);
+	request = gb_operation_get_request_payload(operation);
 
-    if (request->which >= pwm_info->num_pwms) {
-        return GB_OP_INVALID;
-    }
+	if (request->which >= pwm_info->num_pwms) {
+		return GB_OP_INVALID;
+	}
 
-    ret = device_pwm_deactivate(bundle->dev, request->which);
-    if (ret) {
-        LOG_INF("%s(): %x error in ops", __func__, ret);
-        return GB_OP_UNKNOWN_ERROR;
-    }
+	ret = device_pwm_deactivate(bundle->dev, request->which);
+	if (ret) {
+		LOG_INF("%s(): %x error in ops", __func__, ret);
+		return GB_OP_UNKNOWN_ERROR;
+	}
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 /**
@@ -250,41 +249,41 @@ static uint8_t gb_pwm_protocol_deactivate(struct gb_operation *operation)
  */
 static uint8_t gb_pwm_protocol_config(struct gb_operation *operation)
 {
-    struct gb_pwm_info *pwm_info;
-    struct gb_pwm_config_request *request;
-    struct gb_bundle *bundle;
-    uint32_t duty, period;
-    int ret;
+	struct gb_pwm_info *pwm_info;
+	struct gb_pwm_config_request *request;
+	struct gb_bundle *bundle;
+	uint32_t duty, period;
+	int ret;
 
-    if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
-        LOG_ERR("dropping short message");
-        return GB_OP_INVALID;
-    }
+	if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
+		LOG_ERR("dropping short message");
+		return GB_OP_INVALID;
+	}
 
-    bundle = gb_operation_get_bundle(operation);
-    DEBUGASSERT(bundle);
+	bundle = gb_operation_get_bundle(operation);
+	DEBUGASSERT(bundle);
 
-    pwm_info = bundle->priv;
+	pwm_info = bundle->priv;
 
-    if (!pwm_info || !bundle->dev) {
-        return GB_OP_UNKNOWN_ERROR;
-    }
+	if (!pwm_info || !bundle->dev) {
+		return GB_OP_UNKNOWN_ERROR;
+	}
 
-    request = gb_operation_get_request_payload(operation);
+	request = gb_operation_get_request_payload(operation);
 
-    if (request->which >= pwm_info->num_pwms) {
-        return GB_OP_INVALID;
-    }
+	if (request->which >= pwm_info->num_pwms) {
+		return GB_OP_INVALID;
+	}
 
-    duty = sys_le32_to_cpu(request->duty);
-    period = sys_le32_to_cpu(request->period);
-    ret = device_pwm_config(bundle->dev, request->which, duty, period);
-    if (ret) {
-        LOG_INF("%s(): %x error in ops", __func__, ret);
-        return GB_OP_UNKNOWN_ERROR;
-    }
+	duty = sys_le32_to_cpu(request->duty);
+	period = sys_le32_to_cpu(request->period);
+	ret = device_pwm_config(bundle->dev, request->which, duty, period);
+	if (ret) {
+		LOG_INF("%s(): %x error in ops", __func__, ret);
+		return GB_OP_UNKNOWN_ERROR;
+	}
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 /**
@@ -300,39 +299,38 @@ static uint8_t gb_pwm_protocol_config(struct gb_operation *operation)
  */
 static uint8_t gb_pwm_protocol_polarity(struct gb_operation *operation)
 {
-    struct gb_pwm_info *pwm_info;
-    struct gb_pwm_polarity_request *request;
-    struct gb_bundle *bundle;
-    int ret;
+	struct gb_pwm_info *pwm_info;
+	struct gb_pwm_polarity_request *request;
+	struct gb_bundle *bundle;
+	int ret;
 
-    if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
-        LOG_ERR("dropping short message");
-        return GB_OP_INVALID;
-    }
+	if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
+		LOG_ERR("dropping short message");
+		return GB_OP_INVALID;
+	}
 
-    bundle = gb_operation_get_bundle(operation);
-    DEBUGASSERT(bundle);
+	bundle = gb_operation_get_bundle(operation);
+	DEBUGASSERT(bundle);
 
-    pwm_info = bundle->priv;
+	pwm_info = bundle->priv;
 
-    if (!pwm_info || !bundle->dev) {
-        return GB_OP_UNKNOWN_ERROR;
-    }
+	if (!pwm_info || !bundle->dev) {
+		return GB_OP_UNKNOWN_ERROR;
+	}
 
-    request = gb_operation_get_request_payload(operation);
+	request = gb_operation_get_request_payload(operation);
 
-    if (request->which >= pwm_info->num_pwms) {
-        return GB_OP_INVALID;
-    }
+	if (request->which >= pwm_info->num_pwms) {
+		return GB_OP_INVALID;
+	}
 
-    ret = device_pwm_set_polarity(bundle->dev, request->which,
-                                          request->polarity);
-    if (ret) {
-        LOG_INF("%s(): %x error in ops", __func__, ret);
-        return GB_OP_UNKNOWN_ERROR;
-    }
+	ret = device_pwm_set_polarity(bundle->dev, request->which, request->polarity);
+	if (ret) {
+		LOG_INF("%s(): %x error in ops", __func__, ret);
+		return GB_OP_UNKNOWN_ERROR;
+	}
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 /**
@@ -348,38 +346,38 @@ static uint8_t gb_pwm_protocol_polarity(struct gb_operation *operation)
  */
 static uint8_t gb_pwm_protocol_enable(struct gb_operation *operation)
 {
-    struct gb_pwm_info *pwm_info;
-    struct gb_pwm_enable_request *request;
-    struct gb_bundle *bundle;
-    int ret;
+	struct gb_pwm_info *pwm_info;
+	struct gb_pwm_enable_request *request;
+	struct gb_bundle *bundle;
+	int ret;
 
-    if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
-        LOG_ERR("dropping short message");
-        return GB_OP_INVALID;
-    }
+	if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
+		LOG_ERR("dropping short message");
+		return GB_OP_INVALID;
+	}
 
-    bundle = gb_operation_get_bundle(operation);
-    DEBUGASSERT(bundle);
+	bundle = gb_operation_get_bundle(operation);
+	DEBUGASSERT(bundle);
 
-    pwm_info = bundle->priv;
+	pwm_info = bundle->priv;
 
-    if (!pwm_info || !bundle->dev) {
-        return GB_OP_UNKNOWN_ERROR;
-    }
+	if (!pwm_info || !bundle->dev) {
+		return GB_OP_UNKNOWN_ERROR;
+	}
 
-    request = gb_operation_get_request_payload(operation);
+	request = gb_operation_get_request_payload(operation);
 
-    if (request->which >= pwm_info->num_pwms) {
-        return GB_OP_INVALID;
-    }
+	if (request->which >= pwm_info->num_pwms) {
+		return GB_OP_INVALID;
+	}
 
-    ret = device_pwm_enable(bundle->dev, request->which);
-    if (ret) {
-        LOG_INF("%s(): error %x in ops return", __func__, ret);
-        return GB_OP_UNKNOWN_ERROR;
-    }
+	ret = device_pwm_enable(bundle->dev, request->which);
+	if (ret) {
+		LOG_INF("%s(): error %x in ops return", __func__, ret);
+		return GB_OP_UNKNOWN_ERROR;
+	}
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 /**
@@ -395,38 +393,38 @@ static uint8_t gb_pwm_protocol_enable(struct gb_operation *operation)
  */
 static uint8_t gb_pwm_protocol_disable(struct gb_operation *operation)
 {
-    struct gb_pwm_info *pwm_info;
-    struct gb_pwm_disable_request *request;
-    struct gb_bundle *bundle;
-    int ret;
+	struct gb_pwm_info *pwm_info;
+	struct gb_pwm_disable_request *request;
+	struct gb_bundle *bundle;
+	int ret;
 
-    if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
-        LOG_ERR("dropping short message");
-        return GB_OP_INVALID;
-    }
+	if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
+		LOG_ERR("dropping short message");
+		return GB_OP_INVALID;
+	}
 
-    bundle = gb_operation_get_bundle(operation);
-    DEBUGASSERT(bundle);
+	bundle = gb_operation_get_bundle(operation);
+	DEBUGASSERT(bundle);
 
-    pwm_info = bundle->priv;
+	pwm_info = bundle->priv;
 
-    if (!pwm_info || !bundle->dev) {
-        return GB_OP_UNKNOWN_ERROR;
-    }
+	if (!pwm_info || !bundle->dev) {
+		return GB_OP_UNKNOWN_ERROR;
+	}
 
-    request = gb_operation_get_request_payload(operation);
+	request = gb_operation_get_request_payload(operation);
 
-    if (request->which >= pwm_info->num_pwms) {
-        return GB_OP_INVALID;
-    }
+	if (request->which >= pwm_info->num_pwms) {
+		return GB_OP_INVALID;
+	}
 
-    ret = device_pwm_disable(bundle->dev, request->which);
-    if (ret) {
-        LOG_INF("%s(): %x error in ops", __func__, ret);
-        return GB_OP_UNKNOWN_ERROR;
-    }
+	ret = device_pwm_disable(bundle->dev, request->which);
+	if (ret) {
+		LOG_INF("%s(): %x error in ops", __func__, ret);
+		return GB_OP_UNKNOWN_ERROR;
+	}
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 /**
@@ -443,29 +441,29 @@ static uint8_t gb_pwm_protocol_disable(struct gb_operation *operation)
  */
 int gb_pwm_init(unsigned int cport, struct gb_bundle *bundle)
 {
-    struct gb_pwm_info *pwm_info;
+	struct gb_pwm_info *pwm_info;
 
-    DEBUGASSERT(bundle);
+	DEBUGASSERT(bundle);
 
-    pwm_info = zalloc(sizeof(*pwm_info));
-    if (!pwm_info) {
-        return -ENOMEM;
-    }
+	pwm_info = zalloc(sizeof(*pwm_info));
+	if (!pwm_info) {
+		return -ENOMEM;
+	}
 
-    pwm_info->cport = cport;
-    pwm_info->dev_type = DEVICE_TYPE_PWM_HW;
-    pwm_info->dev_id = 0;
+	pwm_info->cport = cport;
+	pwm_info->dev_type = DEVICE_TYPE_PWM_HW;
+	pwm_info->dev_id = 0;
 
-    bundle->dev = device_open(pwm_info->dev_type, pwm_info->dev_id);
-    if (!bundle->dev) {
-        free(pwm_info);
-        LOG_INF("%s(): failed to open device!", __func__);
-        return -EIO;
-    }
+	bundle->dev = device_open(pwm_info->dev_type, pwm_info->dev_id);
+	if (!bundle->dev) {
+		free(pwm_info);
+		LOG_INF("%s(): failed to open device!", __func__);
+		return -EIO;
+	}
 
-    bundle->priv = pwm_info;
+	bundle->priv = pwm_info;
 
-    return 0;
+	return 0;
 }
 
 /**
@@ -479,49 +477,46 @@ int gb_pwm_init(unsigned int cport, struct gb_bundle *bundle)
  */
 void gb_pwm_exit(unsigned int cport, struct gb_bundle *bundle)
 {
-    struct gb_pwm_info *pwm_info;
+	struct gb_pwm_info *pwm_info;
 
-    DEBUGASSERT(bundle);
+	DEBUGASSERT(bundle);
 
-    if (bundle->dev) {
-        device_close(bundle->dev);
-    }
+	if (bundle->dev) {
+		device_close(bundle->dev);
+	}
 
-    pwm_info = bundle->priv;
+	pwm_info = bundle->priv;
 
-    if (pwm_info) {
-        free(pwm_info);
-        pwm_info = NULL;
-    }
+	if (pwm_info) {
+		free(pwm_info);
+		pwm_info = NULL;
+	}
 }
-
 
 /*
  * This structure is to define each PWM protocol operation of handling function.
  */
 static struct gb_operation_handler gb_pwm_handlers[] = {
-    GB_HANDLER(GB_PWM_PROTOCOL_VERSION, gb_pwm_protocol_version),
-    GB_HANDLER(GB_PWM_PROTOCOL_COUNT, gb_pwm_protocol_count),
-    GB_HANDLER(GB_PWM_PROTOCOL_ACTIVATE, gb_pwm_protocol_activate),
-    GB_HANDLER(GB_PWM_PROTOCOL_DEACTIVATE, gb_pwm_protocol_deactivate),
-    GB_HANDLER(GB_PWM_PROTOCOL_CONFIG, gb_pwm_protocol_config),
-    GB_HANDLER(GB_PWM_PROTOCOL_POLARITY, gb_pwm_protocol_polarity),
-    GB_HANDLER(GB_PWM_PROTOCOL_ENABLE, gb_pwm_protocol_enable),
-    GB_HANDLER(GB_PWM_PROTOCOL_DISABLE, gb_pwm_protocol_disable),
+	GB_HANDLER(GB_PWM_PROTOCOL_VERSION, gb_pwm_protocol_version),
+	GB_HANDLER(GB_PWM_PROTOCOL_COUNT, gb_pwm_protocol_count),
+	GB_HANDLER(GB_PWM_PROTOCOL_ACTIVATE, gb_pwm_protocol_activate),
+	GB_HANDLER(GB_PWM_PROTOCOL_DEACTIVATE, gb_pwm_protocol_deactivate),
+	GB_HANDLER(GB_PWM_PROTOCOL_CONFIG, gb_pwm_protocol_config),
+	GB_HANDLER(GB_PWM_PROTOCOL_POLARITY, gb_pwm_protocol_polarity),
+	GB_HANDLER(GB_PWM_PROTOCOL_ENABLE, gb_pwm_protocol_enable),
+	GB_HANDLER(GB_PWM_PROTOCOL_DISABLE, gb_pwm_protocol_disable),
 };
-
 
 /*
  * This structure of information is for PWM protocol fimware to register to
  * greybus.
  */
 static struct gb_driver gb_pwm_driver = {
-    .init = gb_pwm_init,
-    .exit = gb_pwm_exit,
-    .op_handlers = gb_pwm_handlers,
-    .op_handlers_count = ARRAY_SIZE(gb_pwm_handlers),
+	.init = gb_pwm_init,
+	.exit = gb_pwm_exit,
+	.op_handlers = gb_pwm_handlers,
+	.op_handlers_count = ARRAY_SIZE(gb_pwm_handlers),
 };
-
 
 /**
  * @brief Register PWM protocol firmware to Greybus.
@@ -530,5 +525,5 @@ static struct gb_driver gb_pwm_driver = {
  */
 void gb_pwm_register(int cport, int bundle)
 {
-    gb_register_driver(cport, bundle, &gb_pwm_driver);
+	gb_register_driver(cport, bundle, &gb_pwm_driver);
 }

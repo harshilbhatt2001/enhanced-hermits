@@ -30,12 +30,12 @@
 #include <stdbool.h>
 #include <string.h>
 #include <errno.h>
-//#include <queue.h>
+// #include <queue.h>
 
-//#include <device.h>
-//#include <device_camera.h>
+// #include <device.h>
+// #include <device_camera.h>
 #include <greybus/greybus.h>
-//#include <apps/greybus-utils/utils.h>
+// #include <apps/greybus-utils/utils.h>
 #include <sys/byteorder.h>
 
 #include <zephyr/logging/log.h>
@@ -43,32 +43,32 @@ LOG_MODULE_REGISTER(greybus_camera, CONFIG_GREYBUS_LOG_LEVEL);
 
 #include "camera-gb.h"
 
-#define GB_CAMERA_VERSION_MAJOR     0
-#define GB_CAMERA_VERSION_MINOR     1
+#define GB_CAMERA_VERSION_MAJOR 0
+#define GB_CAMERA_VERSION_MINOR 1
 
 /* Camera protocol error codes */
-#define GB_CAM_OP_INVALID_STATE     0x80
+#define GB_CAM_OP_INVALID_STATE 0x80
 
 /* Reserved value for not used data type */
-#define GB_CAM_DT_NOT_USED          0x00
+#define GB_CAM_DT_NOT_USED 0x00
 
 /* Camera protocol operational model */
-#define STATE_REMOVED               0
-#define STATE_INSERTED              1
-#define STATE_UNCONFIGURED          2
-#define STATE_CONFIGURED            3
-#define STATE_STREAMING             4
+#define STATE_REMOVED      0
+#define STATE_INSERTED     1
+#define STATE_UNCONFIGURED 2
+#define STATE_CONFIGURED   3
+#define STATE_STREAMING    4
 
 /**
  * Camera protocol private information.
  */
 struct gb_camera_info {
-    /** CPort from greybus */
-    unsigned int    cport;
-    /** Camera driver handle */
-    struct device   *dev;
-    /** Camera operational model */
-    uint8_t         state;
+	/** CPort from greybus */
+	unsigned int cport;
+	/** Camera driver handle */
+	struct device *dev;
+	/** Camera operational model */
+	uint8_t state;
 };
 
 static struct gb_camera_info *info = NULL;
@@ -84,21 +84,21 @@ static struct gb_camera_info *info = NULL;
  */
 static uint8_t gb_camera_protocol_version(struct gb_operation *operation)
 {
-    struct gb_camera_version_response *response;
+	struct gb_camera_version_response *response;
 
-    LOG_DBG("gb_camera_protocol_version() + ");
+	LOG_DBG("gb_camera_protocol_version() + ");
 
-    response = gb_operation_alloc_response(operation, sizeof(*response));
-    if (!response) {
-        return GB_OP_NO_MEMORY;
-    }
+	response = gb_operation_alloc_response(operation, sizeof(*response));
+	if (!response) {
+		return GB_OP_NO_MEMORY;
+	}
 
-    response->major = GB_CAMERA_VERSION_MAJOR;
-    response->minor = GB_CAMERA_VERSION_MINOR;
+	response->major = GB_CAMERA_VERSION_MAJOR;
+	response->minor = GB_CAMERA_VERSION_MINOR;
 
-    LOG_DBG("gb_camera_protocol_version() - ");
+	LOG_DBG("gb_camera_protocol_version() - ");
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 /**
@@ -112,38 +112,38 @@ static uint8_t gb_camera_protocol_version(struct gb_operation *operation)
  */
 static uint8_t gb_camera_capabilities(struct gb_operation *operation)
 {
-    struct gb_camera_capabilities_response *response;
-    const uint8_t *caps;
-    size_t size;
-    int ret;
+	struct gb_camera_capabilities_response *response;
+	const uint8_t *caps;
+	size_t size;
+	int ret;
 
-    LOG_DBG("gb_camera_capabilities() + ");
+	LOG_DBG("gb_camera_capabilities() + ");
 
-    if (info->state < STATE_UNCONFIGURED) {
-        LOG_DBG("state error %d ", info->state);
-        return GB_OP_INVALID;
-    }
+	if (info->state < STATE_UNCONFIGURED) {
+		LOG_DBG("state error %d ", info->state);
+		return GB_OP_INVALID;
+	}
 
-    /* Retrieve the capabilities and their size. */
-    ret = device_camera_capabilities(info->dev, &size, &caps);
-    if (ret) {
-        return gb_errno_to_op_result(ret);
-    }
+	/* Retrieve the capabilities and their size. */
+	ret = device_camera_capabilities(info->dev, &size, &caps);
+	if (ret) {
+		return gb_errno_to_op_result(ret);
+	}
 
-    if (size > GB_MAX_PAYLOAD_SIZE) {
-        return GB_OP_NO_MEMORY;
-    }
+	if (size > GB_MAX_PAYLOAD_SIZE) {
+		return GB_OP_NO_MEMORY;
+	}
 
-    response = gb_operation_alloc_response(operation, sizeof(*response) + size);
-    if (!response) {
-        return GB_OP_NO_MEMORY;
-    }
+	response = gb_operation_alloc_response(operation, sizeof(*response) + size);
+	if (!response) {
+		return GB_OP_NO_MEMORY;
+	}
 
-    memcpy(response->capabilities, caps, size);
+	memcpy(response->capabilities, caps, size);
 
-    LOG_DBG("gb_camera_capabilities() - ");
+	LOG_DBG("gb_camera_capabilities() - ");
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 struct csi_bus_config {
@@ -160,164 +160,169 @@ struct csi_bus_config {
  */
 static uint8_t gb_camera_configure_streams(struct gb_operation *operation)
 {
-    struct gb_camera_configure_streams_request *request;
-    struct gb_camera_configure_streams_response *response;
-    struct gb_stream_config_req  *cfg_set_req;
-    struct gb_stream_config_resp *cfg_ans_resp;
-    struct streams_cfg_req *cfg_request;
-    struct streams_cfg_ans *cfg_answer;
-    struct csi_bus_config csi_cfg;
-    uint8_t num_streams;
-    uint8_t res_flags = 0;
-    int i, ret;
+	struct gb_camera_configure_streams_request *request;
+	struct gb_camera_configure_streams_response *response;
+	struct gb_stream_config_req *cfg_set_req;
+	struct gb_stream_config_resp *cfg_ans_resp;
+	struct streams_cfg_req *cfg_request;
+	struct streams_cfg_ans *cfg_answer;
+	struct csi_bus_config csi_cfg;
+	uint8_t num_streams;
+	uint8_t res_flags = 0;
+	int i, ret;
 
-    LOG_DBG("gb_camera_configure_streams() + ");
+	LOG_DBG("gb_camera_configure_streams() + ");
 
-    if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
-        LOG_ERR("dropping short message ");
-        return GB_OP_INVALID;
-    }
+	if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
+		LOG_ERR("dropping short message ");
+		return GB_OP_INVALID;
+	}
 
-    request = gb_operation_get_request_payload(operation);
+	request = gb_operation_get_request_payload(operation);
 
-    num_streams = request->num_streams;
-    LOG_DBG("num_streams = %d ", num_streams);
-    LOG_DBG("req flags = %d ", request->flags);
+	num_streams = request->num_streams;
+	LOG_DBG("num_streams = %d ", num_streams);
+	LOG_DBG("req flags = %d ", request->flags);
 
-    if (num_streams > MAX_STREAMS_NUM)
-        return GB_OP_INVALID;
+	if (num_streams > MAX_STREAMS_NUM) {
+		return GB_OP_INVALID;
+	}
 
-    /* Check if the request is acceptable in the current state. */
-    if (num_streams == 0) {
-        if (info->state < STATE_UNCONFIGURED || info->state > STATE_CONFIGURED)
-            return GB_OP_INVALID;
-    } else {
-        if (info->state != STATE_UNCONFIGURED)
-            return GB_OP_INVALID;
-    }
+	/* Check if the request is acceptable in the current state. */
+	if (num_streams == 0) {
+		if (info->state < STATE_UNCONFIGURED || info->state > STATE_CONFIGURED) {
+			return GB_OP_INVALID;
+		}
+	} else {
+		if (info->state != STATE_UNCONFIGURED) {
+			return GB_OP_INVALID;
+		}
+	}
 
-    /* Zero streams unconfigures the camera, move to the unconfigured state. */
-    if (num_streams == 0) {
-        info->state = STATE_UNCONFIGURED;
+	/* Zero streams unconfigures the camera, move to the unconfigured state. */
+	if (num_streams == 0) {
+		info->state = STATE_UNCONFIGURED;
 
-        ret = device_camera_set_streams_cfg(info->dev, &num_streams, NULL,
-                                            0, NULL, NULL, NULL);
-        if (ret)
-            return gb_errno_to_op_result(ret);
+		ret = device_camera_set_streams_cfg(info->dev, &num_streams, NULL, 0, NULL, NULL,
+						    NULL);
+		if (ret) {
+			return gb_errno_to_op_result(ret);
+		}
 
-        response = gb_operation_alloc_response(operation, sizeof(*response));
-        return GB_OP_SUCCESS;
-    }
+		response = gb_operation_alloc_response(operation, sizeof(*response));
+		return GB_OP_SUCCESS;
+	}
 
-    /* Otherwise pass stream configuration to the camera module. */
-    cfg_set_req = request->config;
-    cfg_request = malloc(num_streams * sizeof(*cfg_request));
-    if (!cfg_request)
-        return GB_OP_NO_MEMORY;
+	/* Otherwise pass stream configuration to the camera module. */
+	cfg_set_req = request->config;
+	cfg_request = malloc(num_streams * sizeof(*cfg_request));
+	if (!cfg_request) {
+		return GB_OP_NO_MEMORY;
+	}
 
-    /* convert data for driver */
-    for (i = 0; i < num_streams; i++) {
-        LOG_DBG("   stream #%d", i);
-        cfg_request[i].width = sys_le16_to_cpu(cfg_set_req[i].width);
-        cfg_request[i].height = sys_le16_to_cpu(cfg_set_req[i].height);
-        cfg_request[i].format = sys_le16_to_cpu(cfg_set_req[i].format);
-        cfg_request[i].padding = sys_le16_to_cpu(cfg_set_req[i].padding);
+	/* convert data for driver */
+	for (i = 0; i < num_streams; i++) {
+		LOG_DBG("   stream #%d", i);
+		cfg_request[i].width = sys_le16_to_cpu(cfg_set_req[i].width);
+		cfg_request[i].height = sys_le16_to_cpu(cfg_set_req[i].height);
+		cfg_request[i].format = sys_le16_to_cpu(cfg_set_req[i].format);
+		cfg_request[i].padding = sys_le16_to_cpu(cfg_set_req[i].padding);
 
-        LOG_DBG("    width = %d ", cfg_request[i].width);
-        LOG_DBG("    height = %d ", cfg_request[i].height);
-        LOG_DBG("    format = %d ", cfg_request[i].format);
-        LOG_DBG("    padding = %d ", cfg_request[i].padding);
-    }
+		LOG_DBG("    width = %d ", cfg_request[i].width);
+		LOG_DBG("    height = %d ", cfg_request[i].height);
+		LOG_DBG("    format = %d ", cfg_request[i].format);
+		LOG_DBG("    padding = %d ", cfg_request[i].padding);
+	}
 
-    /* alloc for getting answer from driver */
-    cfg_answer = malloc(MAX_STREAMS_NUM * sizeof(*cfg_answer));
-    if (!cfg_answer) {
-        ret = GB_OP_NO_MEMORY;
-        goto err_free_req_mem;
-    }
+	/* alloc for getting answer from driver */
+	cfg_answer = malloc(MAX_STREAMS_NUM * sizeof(*cfg_answer));
+	if (!cfg_answer) {
+		ret = GB_OP_NO_MEMORY;
+		goto err_free_req_mem;
+	}
 
-    /* driver shall check the num_streams, it can't exceed its capability */
-    ret = device_camera_set_streams_cfg(info->dev, &num_streams, &csi_cfg,
-                                        request->flags, cfg_request,
-                                        &res_flags, cfg_answer);
-    if (ret) {
-        /* FIXME:
-         * add greybus protocol error for EIO operations.
-         * For now, return OP_INVALID
-         */
-        LOG_DBG("Camera module reported error in configure stream %d", ret);
-        ret = GB_OP_INVALID;
-        goto err_free_ans_mem;
-    }
+	/* driver shall check the num_streams, it can't exceed its capability */
+	ret = device_camera_set_streams_cfg(info->dev, &num_streams, &csi_cfg, request->flags,
+					    cfg_request, &res_flags, cfg_answer);
+	if (ret) {
+		/* FIXME:
+		 * add greybus protocol error for EIO operations.
+		 * For now, return OP_INVALID
+		 */
+		LOG_DBG("Camera module reported error in configure stream %d", ret);
+		ret = GB_OP_INVALID;
+		goto err_free_ans_mem;
+	}
 
-    /*
-     * If the requested format is not supported keep camera in un-configured
-     * state;
-     * Stay un-configured anyhow if AP is just testing format;
-     * Move to configured otherwise
-     */
-    if (res_flags & CAMERA_CONF_STREAMS_ADJUSTED)
-        info->state = STATE_UNCONFIGURED;
-    else if (request->flags & CAMERA_CONF_STREAMS_TEST_ONLY)
-        info->state = STATE_UNCONFIGURED;
-    else
-        info->state = STATE_CONFIGURED;
+	/*
+	 * If the requested format is not supported keep camera in un-configured
+	 * state;
+	 * Stay un-configured anyhow if AP is just testing format;
+	 * Move to configured otherwise
+	 */
+	if (res_flags & CAMERA_CONF_STREAMS_ADJUSTED) {
+		info->state = STATE_UNCONFIGURED;
+	} else if (request->flags & CAMERA_CONF_STREAMS_TEST_ONLY) {
+		info->state = STATE_UNCONFIGURED;
+	} else {
+		info->state = STATE_CONFIGURED;
+	}
 
-    /* Create and fill the greybus response. */
-    LOG_DBG("Resp: ");
-    response = gb_operation_alloc_response(operation,
-            sizeof(*response) + request->num_streams * sizeof(*cfg_ans_resp));
-    response->num_streams = num_streams;
-    response->flags = res_flags;
-    response->num_lanes = csi_cfg.num_lanes;
-    response->padding = 0;
-    response->bus_freq = sys_cpu_to_le32(csi_cfg.bus_freq);
-    response->lines_per_second = sys_cpu_to_le32(csi_cfg.lines_per_second);
+	/* Create and fill the greybus response. */
+	LOG_DBG("Resp: ");
+	response = gb_operation_alloc_response(
+		operation, sizeof(*response) + request->num_streams * sizeof(*cfg_ans_resp));
+	response->num_streams = num_streams;
+	response->flags = res_flags;
+	response->num_lanes = csi_cfg.num_lanes;
+	response->padding = 0;
+	response->bus_freq = sys_cpu_to_le32(csi_cfg.bus_freq);
+	response->lines_per_second = sys_cpu_to_le32(csi_cfg.lines_per_second);
 
-    LOG_DBG("flags = 0x%2x", response->flags);
-    LOG_DBG("lanes = %u", response->num_lanes);
-    LOG_DBG("freq = %u", csi_cfg.bus_freq);
-    LOG_DBG("lines = %u", csi_cfg.lines_per_second);
+	LOG_DBG("flags = 0x%2x", response->flags);
+	LOG_DBG("lanes = %u", response->num_lanes);
+	LOG_DBG("freq = %u", csi_cfg.bus_freq);
+	LOG_DBG("lines = %u", csi_cfg.lines_per_second);
 
-    for (i = 0; i < num_streams; i++) {
-        cfg_ans_resp = &response->config[i];
+	for (i = 0; i < num_streams; i++) {
+		cfg_ans_resp = &response->config[i];
 
-        LOG_DBG("");
-        LOG_DBG("    width = %d ", cfg_answer[i].width);
-        LOG_DBG("    height = %d ", cfg_answer[i].height);
-        LOG_DBG("    format = %d ", cfg_answer[i].format);
-        LOG_DBG("    virtual_channel = %d ", cfg_answer[i].virtual_channel);
-        LOG_DBG("    data_type = %d ", cfg_answer[i].data_type);
-        LOG_DBG("    max_size = %d ", cfg_answer[i].max_size);
+		LOG_DBG("");
+		LOG_DBG("    width = %d ", cfg_answer[i].width);
+		LOG_DBG("    height = %d ", cfg_answer[i].height);
+		LOG_DBG("    format = %d ", cfg_answer[i].format);
+		LOG_DBG("    virtual_channel = %d ", cfg_answer[i].virtual_channel);
+		LOG_DBG("    data_type = %d ", cfg_answer[i].data_type);
+		LOG_DBG("    max_size = %d ", cfg_answer[i].max_size);
 
-        cfg_ans_resp->width = sys_cpu_to_le16(cfg_answer[i].width);
-        cfg_ans_resp->height = sys_cpu_to_le16(cfg_answer[i].height);
-        cfg_ans_resp->format = sys_cpu_to_le16(cfg_answer[i].format);
-        cfg_ans_resp->virtual_channel = cfg_answer[i].virtual_channel;
+		cfg_ans_resp->width = sys_cpu_to_le16(cfg_answer[i].width);
+		cfg_ans_resp->height = sys_cpu_to_le16(cfg_answer[i].height);
+		cfg_ans_resp->format = sys_cpu_to_le16(cfg_answer[i].format);
+		cfg_ans_resp->virtual_channel = cfg_answer[i].virtual_channel;
 
-        /*
-         * FIXME
-         * The API towards the camera driver supports a single data type
-         * for now, always return NOT_USED for the second data type
-         */
-        cfg_ans_resp->data_type[0] = cfg_answer[i].data_type;
-        cfg_ans_resp->data_type[1] = GB_CAM_DT_NOT_USED;
+		/*
+		 * FIXME
+		 * The API towards the camera driver supports a single data type
+		 * for now, always return NOT_USED for the second data type
+		 */
+		cfg_ans_resp->data_type[0] = cfg_answer[i].data_type;
+		cfg_ans_resp->data_type[1] = GB_CAM_DT_NOT_USED;
 
-        cfg_ans_resp->padding[0] = 0;
-        cfg_ans_resp->padding[1] = 0;
-        cfg_ans_resp->padding[2] = 0;
-        cfg_ans_resp->max_size = sys_cpu_to_le32(cfg_answer[i].max_size);
-    }
+		cfg_ans_resp->padding[0] = 0;
+		cfg_ans_resp->padding[1] = 0;
+		cfg_ans_resp->padding[2] = 0;
+		cfg_ans_resp->max_size = sys_cpu_to_le32(cfg_answer[i].max_size);
+	}
 
-    ret = GB_OP_SUCCESS;
+	ret = GB_OP_SUCCESS;
 
 err_free_ans_mem:
-    free(cfg_answer);
+	free(cfg_answer);
 err_free_req_mem:
-    free(cfg_request);
+	free(cfg_request);
 
-    LOG_DBG("gb_camera_configure_streams() %d - ", ret);
-    return ret;
+	LOG_DBG("gb_camera_configure_streams() %d - ", ret);
+	return ret;
 }
 
 /**
@@ -330,62 +335,62 @@ err_free_req_mem:
  */
 static uint8_t gb_camera_capture(struct gb_operation *operation)
 {
-    struct gb_camera_capture_request *request;
-    struct capture_info *capt_req;
-    size_t request_size;
-    int ret;
+	struct gb_camera_capture_request *request;
+	struct capture_info *capt_req;
+	size_t request_size;
+	int ret;
 
-    LOG_DBG("gb_camera_capture() + ");
+	LOG_DBG("gb_camera_capture() + ");
 
-    if (info->state != STATE_CONFIGURED && info->state != STATE_STREAMING) {
-        return GB_OP_INVALID;
-    }
+	if (info->state != STATE_CONFIGURED && info->state != STATE_STREAMING) {
+		return GB_OP_INVALID;
+	}
 
-    request_size = gb_operation_get_request_payload_size(operation);
-    if (request_size < sizeof(*request)) {
-        LOG_ERR("dropping short message");
-        return GB_OP_INVALID;
-    }
+	request_size = gb_operation_get_request_payload_size(operation);
+	if (request_size < sizeof(*request)) {
+		LOG_ERR("dropping short message");
+		return GB_OP_INVALID;
+	}
 
-    request = gb_operation_get_request_payload(operation);
+	request = gb_operation_get_request_payload(operation);
 
-    if (request->padding != 0) {
-        LOG_ERR("invalid padding value");
-        return GB_OP_INVALID;
-    }
+	if (request->padding != 0) {
+		LOG_ERR("invalid padding value");
+		return GB_OP_INVALID;
+	}
 
-    capt_req = malloc(sizeof(*capt_req));
-    if(!capt_req) {
-        return GB_OP_NO_MEMORY;
-    }
+	capt_req = malloc(sizeof(*capt_req));
+	if (!capt_req) {
+		return GB_OP_NO_MEMORY;
+	}
 
-    capt_req->request_id = sys_le32_to_cpu(request->request_id);
-    capt_req->streams = request->streams;
-    capt_req->num_frames = sys_le32_to_cpu(request->num_frames);
-    capt_req->settings = request->settings;
-    capt_req->settings_size = request_size - sizeof(*request);
+	capt_req->request_id = sys_le32_to_cpu(request->request_id);
+	capt_req->streams = request->streams;
+	capt_req->num_frames = sys_le32_to_cpu(request->num_frames);
+	capt_req->settings = request->settings;
+	capt_req->settings_size = request_size - sizeof(*request);
 
-    LOG_DBG("    request_id = %d ", capt_req->request_id);
-    LOG_DBG("    streams = %d ", capt_req->streams);
-    LOG_DBG("    num_frames = %d ", capt_req->num_frames);
-    LOG_DBG("    settings_size = %u", capt_req->settings_size);
+	LOG_DBG("    request_id = %d ", capt_req->request_id);
+	LOG_DBG("    streams = %d ", capt_req->streams);
+	LOG_DBG("    num_frames = %d ", capt_req->num_frames);
+	LOG_DBG("    settings_size = %u", capt_req->settings_size);
 
-    ret = device_camera_capture(info->dev, capt_req);
-    if (ret) {
-        LOG_ERR("error in camera capture thread. ");
-        ret = gb_errno_to_op_result(ret);
-        goto err_free_mem;
-    }
+	ret = device_camera_capture(info->dev, capt_req);
+	if (ret) {
+		LOG_ERR("error in camera capture thread. ");
+		ret = gb_errno_to_op_result(ret);
+		goto err_free_mem;
+	}
 
-    free(capt_req);
+	free(capt_req);
 
-    LOG_DBG("gb_camera_capture() - ");
+	LOG_DBG("gb_camera_capture() - ");
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 
 err_free_mem:
-    free(capt_req);
-    return ret;
+	free(capt_req);
+	return ret;
 }
 
 /**
@@ -398,34 +403,34 @@ err_free_mem:
  */
 static uint8_t gb_camera_flush(struct gb_operation *operation)
 {
-    struct gb_camera_flush_response *response;
-    uint32_t request_id = 0;
-    int ret;
+	struct gb_camera_flush_response *response;
+	uint32_t request_id = 0;
+	int ret;
 
-    LOG_DBG("gb_camera_flush() + ");
+	LOG_DBG("gb_camera_flush() + ");
 
-    if (info->state != STATE_STREAMING && info->state != STATE_CONFIGURED) {
-        return GB_OP_INVALID;
-    }
+	if (info->state != STATE_STREAMING && info->state != STATE_CONFIGURED) {
+		return GB_OP_INVALID;
+	}
 
-    ret = device_camera_flush(info->dev, &request_id);
-    if (ret) {
-        return gb_errno_to_op_result(ret);
-    }
+	ret = device_camera_flush(info->dev, &request_id);
+	if (ret) {
+		return gb_errno_to_op_result(ret);
+	}
 
-    info->state = STATE_CONFIGURED;
+	info->state = STATE_CONFIGURED;
 
-    response = gb_operation_alloc_response(operation, sizeof(*response));
-    if (!response) {
-        return GB_OP_NO_MEMORY;
-    }
+	response = gb_operation_alloc_response(operation, sizeof(*response));
+	if (!response) {
+		return GB_OP_NO_MEMORY;
+	}
 
-    response->request_id = sys_cpu_to_le32(request_id);
-    LOG_DBG("    request_id = %d + ", request_id);
+	response->request_id = sys_cpu_to_le32(request_id);
+	LOG_DBG("    request_id = %d + ", request_id);
 
-    LOG_DBG("gb_camera_flush() + ");
+	LOG_DBG("gb_camera_flush() + ");
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 /**
@@ -440,35 +445,35 @@ static uint8_t gb_camera_flush(struct gb_operation *operation)
  */
 static int gb_camera_init(unsigned int cport, struct gb_bundle *bundle)
 {
-    int ret;
+	int ret;
 
-    LOG_DBG("gb_camera_init + ");
+	LOG_DBG("gb_camera_init + ");
 
-    info = zalloc(sizeof(*info));
-    if (info == NULL) {
-        return -ENOMEM;
-    }
+	info = zalloc(sizeof(*info));
+	if (info == NULL) {
+		return -ENOMEM;
+	}
 
-    info->cport = cport;
+	info->cport = cport;
 
-    info->state = STATE_INSERTED;
+	info->state = STATE_INSERTED;
 
-    info->dev = device_open(DEVICE_TYPE_CAMERA_HW, 0);
-    if (!info->dev) {
-        return -EIO;
-        goto err_free_info;
-    }
+	info->dev = device_open(DEVICE_TYPE_CAMERA_HW, 0);
+	if (!info->dev) {
+		return -EIO;
+		goto err_free_info;
+	}
 
-    info->state = STATE_UNCONFIGURED;
+	info->state = STATE_UNCONFIGURED;
 
-    LOG_DBG("gb_camera_init - ");
+	LOG_DBG("gb_camera_init - ");
 
-    return 0;
+	return 0;
 
 err_free_info:
-    free(info);
+	free(info);
 
-    return ret;
+	return ret;
 }
 
 /**
@@ -482,33 +487,33 @@ err_free_info:
  */
 static void gb_camera_exit(unsigned int cport, struct gb_bundle *bundle)
 {
-    DEBUGASSERT(cport == info->cport);
+	DEBUGASSERT(cport == info->cport);
 
-    device_close(info->dev);
+	device_close(info->dev);
 
-    free(info);
-    info = NULL;
+	free(info);
+	info = NULL;
 }
 
 /**
  * @brief Greybus Camera Protocol operation handler
  */
 static struct gb_operation_handler gb_camera_handlers[] = {
-    GB_HANDLER(GB_CAMERA_TYPE_PROTOCOL_VERSION, gb_camera_protocol_version),
-    GB_HANDLER(GB_CAMERA_TYPE_CAPABILITIES, gb_camera_capabilities),
-    GB_HANDLER(GB_CAMERA_TYPE_CONFIGURE_STREAMS, gb_camera_configure_streams),
-    GB_HANDLER(GB_CAMERA_TYPE_CAPTURE, gb_camera_capture),
-    GB_HANDLER(GB_CAMERA_TYPE_FLUSH, gb_camera_flush),
+	GB_HANDLER(GB_CAMERA_TYPE_PROTOCOL_VERSION, gb_camera_protocol_version),
+	GB_HANDLER(GB_CAMERA_TYPE_CAPABILITIES, gb_camera_capabilities),
+	GB_HANDLER(GB_CAMERA_TYPE_CONFIGURE_STREAMS, gb_camera_configure_streams),
+	GB_HANDLER(GB_CAMERA_TYPE_CAPTURE, gb_camera_capture),
+	GB_HANDLER(GB_CAMERA_TYPE_FLUSH, gb_camera_flush),
 };
 
 /**
  * @brief Greybus Camera Protocol driver ops
  */
 static struct gb_driver gb_camera_driver = {
-    .init = gb_camera_init,
-    .exit = gb_camera_exit,
-    .op_handlers = gb_camera_handlers,
-    .op_handlers_count = ARRAY_SIZE(gb_camera_handlers),
+	.init = gb_camera_init,
+	.exit = gb_camera_exit,
+	.op_handlers = gb_camera_handlers,
+	.op_handlers_count = ARRAY_SIZE(gb_camera_handlers),
 };
 
 /**
@@ -519,5 +524,5 @@ static struct gb_driver gb_camera_driver = {
  */
 void gb_camera_register(int cport, int bundle)
 {
-    gb_register_driver(cport, bundle, &gb_camera_driver);
+	gb_register_driver(cport, bundle, &gb_camera_driver);
 }

@@ -36,4 +36,3 @@ int svc_handle(void *payload, int size);
 void send_ap_id(int iid);
 
 #endif
-

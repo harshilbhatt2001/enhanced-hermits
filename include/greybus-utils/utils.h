@@ -39,14 +39,13 @@
 
 static inline size_t gb_packet_size(const char *rbuf)
 {
-   const struct gb_operation_hdr *hdr = (const struct gb_operation_hdr *)rbuf;
-   return sys_le16_to_cpu(hdr->size);
+	const struct gb_operation_hdr *hdr = (const struct gb_operation_hdr *)rbuf;
+	return sys_le16_to_cpu(hdr->size);
 }
 
 struct cport_msg {
-	__u8	cport;
-	__u8	data[0];
+	__u8 cport;
+	__u8 data[0];
 };
 
 #endif
-

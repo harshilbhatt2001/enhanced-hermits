@@ -32,14 +32,13 @@
 #include <list.h>
 
 struct gb_cport {
-    struct list_head list;
-    int id;
-    int bundle;
-    int protocol;
+	struct list_head list;
+	int id;
+	int bundle;
+	int protocol;
 };
 
-typedef void (*manifest_handler)(unsigned char *manifest_file,
-                                 int device_id, int manifest_number);
+typedef void (*manifest_handler)(unsigned char *manifest_file, int device_id, int manifest_number);
 void foreach_manifest(manifest_handler handler);
 void enable_cports(void);
 void *get_manifest_blob(void);
@@ -57,4 +56,3 @@ size_t manifest_get_num_cports_bundle(int bundle_id);
 unsigned int manifest_get_start_cport_bundle(int bundle_id);
 
 #endif
-

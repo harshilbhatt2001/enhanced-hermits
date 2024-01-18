@@ -34,16 +34,16 @@
 #include <sys/types.h>
 
 enum {
-    GB_TAPE_RDONLY,
-    GB_TAPE_WRONLY,
+	GB_TAPE_RDONLY,
+	GB_TAPE_WRONLY,
 };
 
 struct gb_tape_mechanism {
-    int (*open)(const char *pathname, int mode);
-    void (*close)(int fd);
+	int (*open)(const char *pathname, int mode);
+	void (*close)(int fd);
 
-    ssize_t (*write)(int fd, const void *data, size_t size);
-    ssize_t (*read)(int fd, void *data, size_t size);
+	ssize_t (*write)(int fd, const void *data, size_t size);
+	ssize_t (*read)(int fd, void *data, size_t size);
 };
 
 int gb_tape_register_mechanism(struct gb_tape_mechanism *mechanism);
@@ -54,4 +54,3 @@ int gb_tape_stop(void);
 int gb_tape_replay(const char *pathname);
 
 #endif /* __GREYBUS_TAPE_H__ */
-

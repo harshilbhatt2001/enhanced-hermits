@@ -22,7 +22,8 @@ struct greybus_interface_config {
 	const char *const bus_name;
 };
 
-static int greybus_interface_init(const struct device *dev) {
+static int greybus_interface_init(const struct device *dev)
+{
 
 	const struct greybus_interface_config *config =
 		(struct greybus_interface_config *)dev->config;
@@ -36,28 +37,21 @@ static int greybus_interface_init(const struct device *dev) {
 
 	LOG_DBG("probed greybus interface %u", config->num);
 
-    return 0;
+	return 0;
 }
 
-#define DEFINE_GREYBUS_INTERFACE(_num)						\
-															\
-        static const struct greybus_interface_config		\
-			greybus_interface_config_##_num = {				\
-			.num = (uint8_t) _num,							\
-			.vendor_string_id =								\
-				DT_PROP(DT_PHANDLE(DT_DRV_INST(_num), 		\
-					vendor_string_id), id),					\
-			.product_string_id =							\
-				DT_PROP(DT_PHANDLE(DT_DRV_INST(_num), 		\
-					product_string_id), id),				\
-			.bus_name = 									\
-				DT_NODE_FULL_NAME(DT_PARENT(DT_DRV_INST(_num))),		\
-        };													\
-        													\
-        DEVICE_DT_INST_DEFINE(_num, 						\
-			greybus_interface_init,					\
-			NULL, NULL,										\
-			&greybus_interface_config_##_num, POST_KERNEL,	\
-			CONFIG_GREYBUS_INTERFACE_INIT_PRIORITY, NULL);
+#define DEFINE_GREYBUS_INTERFACE(_num)                                                             \
+                                                                                                   \
+	static const struct greybus_interface_config greybus_interface_config_##_num = {           \
+		.num = (uint8_t)_num,                                                              \
+		.vendor_string_id = DT_PROP(DT_PHANDLE(DT_DRV_INST(_num), vendor_string_id), id),  \
+		.product_string_id =                                                               \
+			DT_PROP(DT_PHANDLE(DT_DRV_INST(_num), product_string_id), id),             \
+		.bus_name = DT_NODE_FULL_NAME(DT_PARENT(DT_DRV_INST(_num))),                       \
+	};                                                                                         \
+                                                                                                   \
+	DEVICE_DT_INST_DEFINE(_num, greybus_interface_init, NULL, NULL,                            \
+			      &greybus_interface_config_##_num, POST_KERNEL,                       \
+			      CONFIG_GREYBUS_INTERFACE_INIT_PRIORITY, NULL);
 
 DT_INST_FOREACH_STATUS_OKAY(DEFINE_GREYBUS_INTERFACE);

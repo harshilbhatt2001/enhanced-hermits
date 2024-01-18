@@ -40,71 +40,70 @@ LOG_MODULE_REGISTER(greybus_vibrator, CONFIG_GREYBUS_LOG_LEVEL);
 
 #include "vibrator-gb.h"
 
-
 /* Version of the Greybus vibrator protocol we support */
-#define GB_VIBRATOR_VERSION_MAJOR    0x00
-#define GB_VIBRATOR_VERSION_MINOR    0x01
+#define GB_VIBRATOR_VERSION_MAJOR 0x00
+#define GB_VIBRATOR_VERSION_MINOR 0x01
 
 /* Pick a GPIO line exposed on APBridge2 via the schematics */
-#define GB_VIBRATOR_DUMMY_GPIO       0x00
+#define GB_VIBRATOR_DUMMY_GPIO 0x00
 
 static uint8_t gb_vibrator_protocol_version(struct gb_operation *operation)
 {
-    struct gb_vibrator_proto_version_response *response;
+	struct gb_vibrator_proto_version_response *response;
 
-    response = gb_operation_alloc_response(operation, sizeof(*response));
-    if (!response)
-        return GB_OP_NO_MEMORY;
+	response = gb_operation_alloc_response(operation, sizeof(*response));
+	if (!response) {
+		return GB_OP_NO_MEMORY;
+	}
 
-    response->major = GB_VIBRATOR_VERSION_MAJOR;
-    response->minor = GB_VIBRATOR_VERSION_MINOR;
+	response->major = GB_VIBRATOR_VERSION_MAJOR;
+	response->minor = GB_VIBRATOR_VERSION_MINOR;
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 static uint8_t gb_vibrator_vibrator_on(struct gb_operation *operation)
 {
-    struct gb_vibrator_on_request *request =
-            gb_operation_get_request_payload(operation);
+	struct gb_vibrator_on_request *request = gb_operation_get_request_payload(operation);
 
-    if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
-        LOG_ERR("dropping short message");
-        return GB_OP_INVALID;
-    }
+	if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
+		LOG_ERR("dropping short message");
+		return GB_OP_INVALID;
+	}
 
-    gpio_activate(GB_VIBRATOR_DUMMY_GPIO);
-    gpio_set_value(GB_VIBRATOR_DUMMY_GPIO, 1);
+	gpio_activate(GB_VIBRATOR_DUMMY_GPIO);
+	gpio_set_value(GB_VIBRATOR_DUMMY_GPIO, 1);
 
-    usleep(sys_le16_to_cpu(request->timeout_ms));
+	usleep(sys_le16_to_cpu(request->timeout_ms));
 
-    gpio_deactivate(GB_VIBRATOR_DUMMY_GPIO);
+	gpio_deactivate(GB_VIBRATOR_DUMMY_GPIO);
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 static uint8_t gb_vibrator_vibrator_off(struct gb_operation *operation)
 {
-    // Deactivate the GPIO line, somehow.
+	// Deactivate the GPIO line, somehow.
 
-    gpio_activate(GB_VIBRATOR_DUMMY_GPIO);
-    gpio_set_value(GB_VIBRATOR_DUMMY_GPIO, 0);
-    gpio_deactivate(GB_VIBRATOR_DUMMY_GPIO);
+	gpio_activate(GB_VIBRATOR_DUMMY_GPIO);
+	gpio_set_value(GB_VIBRATOR_DUMMY_GPIO, 0);
+	gpio_deactivate(GB_VIBRATOR_DUMMY_GPIO);
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 static struct gb_operation_handler gb_vibrator_handlers[] = {
-    GB_HANDLER(GB_VIBRATOR_TYPE_PROTOCOL_VERSION, gb_vibrator_protocol_version),
-    GB_HANDLER(GB_VIBRATOR_TYPE_VIBRATOR_ON, gb_vibrator_vibrator_on),
-    GB_HANDLER(GB_VIBRATOR_TYPE_VIBRATOR_OFF, gb_vibrator_vibrator_off),
+	GB_HANDLER(GB_VIBRATOR_TYPE_PROTOCOL_VERSION, gb_vibrator_protocol_version),
+	GB_HANDLER(GB_VIBRATOR_TYPE_VIBRATOR_ON, gb_vibrator_vibrator_on),
+	GB_HANDLER(GB_VIBRATOR_TYPE_VIBRATOR_OFF, gb_vibrator_vibrator_off),
 };
 
 static struct gb_driver gb_vibrator_driver = {
-    .op_handlers = gb_vibrator_handlers,
-    .op_handlers_count = ARRAY_SIZE(gb_vibrator_handlers),
+	.op_handlers = gb_vibrator_handlers,
+	.op_handlers_count = ARRAY_SIZE(gb_vibrator_handlers),
 };
 
 void gb_vibrator_register(int cport, int bundle)
 {
-    gb_register_driver(cport, bundle, &gb_vibrator_driver);
+	gb_register_driver(cport, bundle, &gb_vibrator_driver);
 }

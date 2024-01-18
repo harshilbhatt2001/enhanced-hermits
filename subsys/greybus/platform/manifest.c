@@ -48,19 +48,18 @@ int manifest_get_fragment(uint8_t **mnfb, size_t *mnfb_size, uint8_t id)
 	int r = -ENOENT;
 
 	if (IS_ENABLED(CONFIG_GREYBUS_CLICK_MANIFEST_BUILTIN)) {
-		if(id == 0){
+		if (id == 0) {
 			*mnfb = (uint8_t *)greybus_manifest_click1_fragment_builtin;
 			*mnfb_size = sizeof(greybus_manifest_click1_fragment_builtin);
-		}
-		else if(id == 1){
+		} else if (id == 1) {
 			*mnfb = (uint8_t *)greybus_manifest_click2_fragment_builtin;
 			*mnfb_size = sizeof(greybus_manifest_click2_fragment_builtin);
-		}
-		else 
+		} else {
 			return id;
+		}
 		r = 0;
-	}
-	else
+	} else {
 		r = manifest_get_fragment_clickid(mnfb, mnfb_size, id);
+	}
 	return r;
 }

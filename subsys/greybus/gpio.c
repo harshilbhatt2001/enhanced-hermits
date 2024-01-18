@@ -34,9 +34,8 @@
 #include <greybus/platform.h>
 #include <zephyr/sys/byteorder.h>
 
-#if defined(CONFIG_BOARD_NATIVE_POSIX_64BIT) \
-	|| defined(CONFIG_BOARD_NATIVE_POSIX_32BIT) \
-	|| defined(CONFIG_BOARD_NRF52_BSIM)
+#if defined(CONFIG_BOARD_NATIVE_POSIX_64BIT) || defined(CONFIG_BOARD_NATIVE_POSIX_32BIT) ||        \
+	defined(CONFIG_BOARD_NRF52_BSIM)
 #include <semaphore.h>
 #else
 #include <zephyr/posix/semaphore.h>
@@ -54,8 +53,9 @@ static uint8_t gb_gpio_protocol_version(struct gb_operation *operation)
 	struct gb_gpio_proto_version_response *response;
 
 	response = gb_operation_alloc_response(operation, sizeof(*response));
-	if (!response)
+	if (!response) {
 		return GB_OP_NO_MEMORY;
+	}
 
 	response->major = GB_GPIO_VERSION_MAJOR;
 	response->minor = GB_GPIO_VERSION_MINOR;
@@ -81,12 +81,14 @@ static uint8_t gb_gpio_line_count(struct gb_operation *operation)
 	__ASSERT_NO_MSG(cfg != NULL);
 
 	response = gb_operation_alloc_response(operation, sizeof(*response));
-	if (!response)
+	if (!response) {
 		return GB_OP_NO_MEMORY;
+	}
 
 	count = POPCOUNT(cfg->port_pin_mask);
-	if (!count)
+	if (!count) {
 		return GB_OP_UNKNOWN_ERROR;
+	}
 
 	response->count = count - 1;
 
@@ -100,8 +102,7 @@ static uint8_t gb_gpio_activate(struct gb_operation *operation)
 	struct gb_bundle *bundle = gb_operation_get_bundle(operation);
 	__ASSERT_NO_MSG(bundle != NULL);
 	unsigned int cport_idx = operation->cport - bundle->cport_start;
-	struct gb_gpio_activate_request *request =
-		gb_operation_get_request_payload(operation);
+	struct gb_gpio_activate_request *request = gb_operation_get_request_payload(operation);
 
 	dev = bundle->dev[cport_idx];
 	if (dev == NULL) {
@@ -116,8 +117,9 @@ static uint8_t gb_gpio_activate(struct gb_operation *operation)
 		return GB_OP_INVALID;
 	}
 
-	if (request->which >= POPCOUNT(cfg->port_pin_mask))
+	if (request->which >= POPCOUNT(cfg->port_pin_mask)) {
 		return GB_OP_INVALID;
+	}
 
 	/* No "activation" in Zephyr. Maybe power mgmt in the future */
 
@@ -131,8 +133,7 @@ static uint8_t gb_gpio_deactivate(struct gb_operation *operation)
 	struct gb_bundle *bundle = gb_operation_get_bundle(operation);
 	__ASSERT_NO_MSG(bundle != NULL);
 	unsigned int cport_idx = operation->cport - bundle->cport_start;
-	struct gb_gpio_activate_request *request =
-		gb_operation_get_request_payload(operation);
+	struct gb_gpio_activate_request *request = gb_operation_get_request_payload(operation);
 
 	dev = bundle->dev[cport_idx];
 	if (dev == NULL) {
@@ -147,8 +148,9 @@ static uint8_t gb_gpio_deactivate(struct gb_operation *operation)
 		return GB_OP_INVALID;
 	}
 
-	if (request->which >= POPCOUNT(cfg->port_pin_mask))
+	if (request->which >= POPCOUNT(cfg->port_pin_mask)) {
 		return GB_OP_INVALID;
+	}
 
 	/* No "deactivation" in Zephyr. Maybe power mgmt in the future */
 
@@ -163,8 +165,7 @@ static uint8_t gb_gpio_get_direction(struct gb_operation *operation)
 	__ASSERT_NO_MSG(bundle != NULL);
 	unsigned int cport_idx = operation->cport - bundle->cport_start;
 	struct gb_gpio_get_direction_response *response;
-	struct gb_gpio_get_direction_request *request =
-		gb_operation_get_request_payload(operation);
+	struct gb_gpio_get_direction_request *request = gb_operation_get_request_payload(operation);
 
 	dev = bundle->dev[cport_idx];
 	if (dev == NULL) {
@@ -179,12 +180,14 @@ static uint8_t gb_gpio_get_direction(struct gb_operation *operation)
 		return GB_OP_INVALID;
 	}
 
-	if (request->which >= POPCOUNT(cfg->port_pin_mask))
+	if (request->which >= POPCOUNT(cfg->port_pin_mask)) {
 		return GB_OP_INVALID;
+	}
 
 	response = gb_operation_alloc_response(operation, sizeof(*response));
-	if (!response)
+	if (!response) {
 		return GB_OP_NO_MEMORY;
+	}
 
 	bool dir = gpio_pin_is_input(dev, request->which);
 	/* In Greybus 0 := output, 1 := input. Zephyr is the opposite */
@@ -199,8 +202,7 @@ static uint8_t gb_gpio_direction_in(struct gb_operation *operation)
 	struct gb_bundle *bundle = gb_operation_get_bundle(operation);
 	__ASSERT_NO_MSG(bundle != NULL);
 	unsigned int cport_idx = operation->cport - bundle->cport_start;
-	struct gb_gpio_direction_in_request *request =
-		gb_operation_get_request_payload(operation);
+	struct gb_gpio_direction_in_request *request = gb_operation_get_request_payload(operation);
 
 	dev = bundle->dev[cport_idx];
 	if (dev == NULL) {
@@ -215,10 +217,12 @@ static uint8_t gb_gpio_direction_in(struct gb_operation *operation)
 		return GB_OP_INVALID;
 	}
 
-	if (request->which >= POPCOUNT(cfg->port_pin_mask))
+	if (request->which >= POPCOUNT(cfg->port_pin_mask)) {
 		return GB_OP_INVALID;
+	}
 
-	return gb_errno_to_op_result(gpio_pin_configure(dev, (gpio_pin_t)request->which, GPIO_INPUT));
+	return gb_errno_to_op_result(
+		gpio_pin_configure(dev, (gpio_pin_t)request->which, GPIO_INPUT));
 }
 
 static uint8_t gb_gpio_direction_out(struct gb_operation *operation)
@@ -229,8 +233,7 @@ static uint8_t gb_gpio_direction_out(struct gb_operation *operation)
 	struct gb_bundle *bundle = gb_operation_get_bundle(operation);
 	__ASSERT_NO_MSG(bundle != NULL);
 	unsigned int cport_idx = operation->cport - bundle->cport_start;
-	struct gb_gpio_direction_out_request *request =
-		gb_operation_get_request_payload(operation);
+	struct gb_gpio_direction_out_request *request = gb_operation_get_request_payload(operation);
 
 	dev = bundle->dev[cport_idx];
 	if (dev == NULL) {
@@ -245,8 +248,9 @@ static uint8_t gb_gpio_direction_out(struct gb_operation *operation)
 		return GB_OP_INVALID;
 	}
 
-	if (request->which >= POPCOUNT(cfg->port_pin_mask))
+	if (request->which >= POPCOUNT(cfg->port_pin_mask)) {
 		return GB_OP_INVALID;
+	}
 
 	ret = gpio_pin_configure(dev, request->which, GPIO_OUTPUT);
 	if (ret != 0) {
@@ -269,8 +273,7 @@ static uint8_t gb_gpio_get_value(struct gb_operation *operation)
 	__ASSERT_NO_MSG(bundle != NULL);
 	unsigned int cport_idx = operation->cport - bundle->cport_start;
 	struct gb_gpio_get_value_response *response;
-	struct gb_gpio_get_value_request *request =
-		gb_operation_get_request_payload(operation);
+	struct gb_gpio_get_value_request *request = gb_operation_get_request_payload(operation);
 
 	dev = bundle->dev[cport_idx];
 	if (dev == NULL) {
@@ -285,12 +288,14 @@ static uint8_t gb_gpio_get_value(struct gb_operation *operation)
 		return GB_OP_INVALID;
 	}
 
-	if (request->which >= POPCOUNT(cfg->port_pin_mask))
+	if (request->which >= POPCOUNT(cfg->port_pin_mask)) {
 		return GB_OP_INVALID;
+	}
 
 	response = gb_operation_alloc_response(operation, sizeof(*response));
-	if (!response)
+	if (!response) {
 		return GB_OP_NO_MEMORY;
+	}
 
 	response->value = gpio_pin_get(dev, (gpio_pin_t)request->which);
 	return GB_OP_SUCCESS;
@@ -303,8 +308,7 @@ static uint8_t gb_gpio_set_value(struct gb_operation *operation)
 	struct gb_bundle *bundle = gb_operation_get_bundle(operation);
 	__ASSERT_NO_MSG(bundle != NULL);
 	unsigned int cport_idx = operation->cport - bundle->cport_start;
-	struct gb_gpio_set_value_request *request =
-		gb_operation_get_request_payload(operation);
+	struct gb_gpio_set_value_request *request = gb_operation_get_request_payload(operation);
 
 	dev = bundle->dev[cport_idx];
 	if (dev == NULL) {
@@ -319,8 +323,9 @@ static uint8_t gb_gpio_set_value(struct gb_operation *operation)
 		return GB_OP_INVALID;
 	}
 
-	if (request->which >= POPCOUNT(cfg->port_pin_mask))
+	if (request->which >= POPCOUNT(cfg->port_pin_mask)) {
 		return GB_OP_INVALID;
+	}
 
 	return gb_errno_to_op_result(gpio_pin_set(dev, request->which, request->value));
 }
@@ -333,8 +338,7 @@ static uint8_t gb_gpio_set_debounce(struct gb_operation *operation)
 	struct gb_bundle *bundle = gb_operation_get_bundle(operation);
 	__ASSERT_NO_MSG(bundle != NULL);
 	unsigned int cport_idx = operation->cport - bundle->cport_start;
-	struct gb_gpio_set_debounce_request *request =
-		gb_operation_get_request_payload(operation);
+	struct gb_gpio_set_debounce_request *request = gb_operation_get_request_payload(operation);
 
 #ifdef DT_HAS_TI_CC13XX_CC26XX_GPIO_ENABLED
 	flags = CC13XX_CC26XX_GPIO_DEBOUNCE;
@@ -352,11 +356,13 @@ static uint8_t gb_gpio_set_debounce(struct gb_operation *operation)
 		return GB_OP_INVALID;
 	}
 
-	if (request->which >= POPCOUNT(cfg->port_pin_mask))
+	if (request->which >= POPCOUNT(cfg->port_pin_mask)) {
 		return GB_OP_INVALID;
+	}
 
 	if (sys_le16_to_cpu(request->usec) > 0) {
-		return gb_errno_to_op_result(gpio_pin_configure(dev, (gpio_pin_t)request->which, flags));
+		return gb_errno_to_op_result(
+			gpio_pin_configure(dev, (gpio_pin_t)request->which, flags));
 	}
 
 	return GB_OP_SUCCESS;
@@ -369,8 +375,7 @@ static uint8_t gb_gpio_irq_mask(struct gb_operation *operation)
 	struct gb_bundle *bundle = gb_operation_get_bundle(operation);
 	__ASSERT_NO_MSG(bundle != NULL);
 	unsigned int cport_idx = operation->cport - bundle->cport_start;
-	struct gb_gpio_irq_mask_request *request =
-		gb_operation_get_request_payload(operation);
+	struct gb_gpio_irq_mask_request *request = gb_operation_get_request_payload(operation);
 
 	dev = bundle->dev[cport_idx];
 	if (dev == NULL) {
@@ -385,10 +390,12 @@ static uint8_t gb_gpio_irq_mask(struct gb_operation *operation)
 		return GB_OP_INVALID;
 	}
 
-	if (request->which >= POPCOUNT(cfg->port_pin_mask))
+	if (request->which >= POPCOUNT(cfg->port_pin_mask)) {
 		return GB_OP_INVALID;
+	}
 
-	return gb_errno_to_op_result(gpio_pin_interrupt_configure(dev, request->which, GPIO_INT_DISABLE));
+	return gb_errno_to_op_result(
+		gpio_pin_interrupt_configure(dev, request->which, GPIO_INT_DISABLE));
 }
 
 static uint8_t gb_gpio_irq_unmask(struct gb_operation *operation)
@@ -398,8 +405,7 @@ static uint8_t gb_gpio_irq_unmask(struct gb_operation *operation)
 	struct gb_bundle *bundle = gb_operation_get_bundle(operation);
 	__ASSERT_NO_MSG(bundle != NULL);
 	unsigned int cport_idx = operation->cport - bundle->cport_start;
-	struct gb_gpio_irq_unmask_request *request =
-		gb_operation_get_request_payload(operation);
+	struct gb_gpio_irq_unmask_request *request = gb_operation_get_request_payload(operation);
 
 	dev = bundle->dev[cport_idx];
 	if (dev == NULL) {
@@ -414,10 +420,12 @@ static uint8_t gb_gpio_irq_unmask(struct gb_operation *operation)
 		return GB_OP_INVALID;
 	}
 
-	if (request->which >= POPCOUNT(cfg->port_pin_mask))
+	if (request->which >= POPCOUNT(cfg->port_pin_mask)) {
 		return GB_OP_INVALID;
+	}
 
-	return gb_errno_to_op_result(gpio_pin_interrupt_configure(dev, request->which, GPIO_INT_ENABLE | GPIO_INT_EDGE_RISING));
+	return gb_errno_to_op_result(gpio_pin_interrupt_configure(
+		dev, request->which, GPIO_INT_ENABLE | GPIO_INT_EDGE_RISING));
 }
 
 int gb_gpio_irq_event(int irq, void *context, void *priv)
@@ -431,10 +439,10 @@ int gb_gpio_irq_event(int irq, void *context, void *priv)
 		return -EINVAL;
 	}
 
-	operation = gb_operation_create(cport, GB_GPIO_TYPE_IRQ_EVENT,
-									sizeof(*request));
-	if (!operation)
+	operation = gb_operation_create(cport, GB_GPIO_TYPE_IRQ_EVENT, sizeof(*request));
+	if (!operation) {
 		return OK;
+	}
 
 	request = gb_operation_get_request_payload(operation);
 	request->which = irq;
@@ -457,8 +465,7 @@ static uint8_t gb_gpio_irq_type(struct gb_operation *operation)
 	struct gb_bundle *bundle = gb_operation_get_bundle(operation);
 	__ASSERT_NO_MSG(bundle != NULL);
 	unsigned int cport_idx = operation->cport - bundle->cport_start;
-	struct gb_gpio_irq_type_request *request =
-		gb_operation_get_request_payload(operation);
+	struct gb_gpio_irq_type_request *request = gb_operation_get_request_payload(operation);
 	enum gpio_int_mode mode;
 	enum gpio_int_trig trigger;
 
@@ -475,10 +482,11 @@ static uint8_t gb_gpio_irq_type(struct gb_operation *operation)
 		return GB_OP_INVALID;
 	}
 
-	if (request->which >= POPCOUNT(cfg->port_pin_mask))
+	if (request->which >= POPCOUNT(cfg->port_pin_mask)) {
 		return GB_OP_INVALID;
+	}
 
-	switch(request->type) {
+	switch (request->type) {
 	case GB_GPIO_IRQ_TYPE_NONE:
 		mode = GPIO_INT_MODE_DISABLED;
 		trigger = 0;
@@ -507,7 +515,8 @@ static uint8_t gb_gpio_irq_type(struct gb_operation *operation)
 		return GB_OP_INVALID;
 	}
 
-	return gb_errno_to_op_result(gpio_pin_interrupt_configure(dev, request->which, mode | trigger));
+	return gb_errno_to_op_result(
+		gpio_pin_interrupt_configure(dev, request->which, mode | trigger));
 }
 
 static struct gb_operation_handler gb_gpio_handlers[] = {
@@ -531,8 +540,9 @@ static int gb_gpio_init(unsigned int cport, struct gb_bundle *bundle)
 	unsigned int cport_idx = cport - bundle->cport_start;
 
 	bundle->dev[cport_idx] = (struct device *)gb_cport_to_device(cport);
-	if (!bundle->dev[cport_idx])
+	if (!bundle->dev[cport_idx]) {
 		return -EIO;
+	}
 	return 0;
 }
 
@@ -545,7 +555,7 @@ static void gb_gpio_exit(unsigned int cport, struct gb_bundle *bundle)
 struct gb_driver gpio_driver = {
 	.init = gb_gpio_init,
 	.exit = gb_gpio_exit,
-	.op_handlers = (struct gb_operation_handler*) gb_gpio_handlers,
+	.op_handlers = (struct gb_operation_handler *)gb_gpio_handlers,
 	.op_handlers_count = ARRAY_SIZE(gb_gpio_handlers),
 };
 

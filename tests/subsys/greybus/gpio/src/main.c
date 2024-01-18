@@ -33,27 +33,26 @@ static void board_setup(void)
 extern void test_greybus_setup(void);
 extern void test_greybus_teardown(void);
 
-void test_main(void) {
+void test_main(void)
+{
 
 	board_setup();
 	test_greybus_setup();
-    ztest_test_suite(greybus_gpio,
-        ztest_unit_test(test_greybus_gpio_protocol_version),
-        ztest_unit_test(test_greybus_gpio_cport_shutdown),
-        ztest_unit_test(test_greybus_gpio_line_count),
-        ztest_unit_test(test_greybus_gpio_activate),
-        ztest_unit_test(test_greybus_gpio_deactivate),
-        ztest_unit_test(test_greybus_gpio_get_direction),
-        ztest_unit_test(test_greybus_gpio_direction_input),
-        ztest_unit_test(test_greybus_gpio_direction_output),
-        ztest_unit_test(test_greybus_gpio_get_value),
-        ztest_unit_test(test_greybus_gpio_set_value),
-        ztest_unit_test(test_greybus_gpio_set_debounce),
-        ztest_unit_test(test_greybus_gpio_irq_type),
-        ztest_unit_test(test_greybus_gpio_irq_mask),
-        ztest_unit_test(test_greybus_gpio_irq_unmask),
-        ztest_unit_test(test_greybus_gpio_irq_event)
-        );
-    ztest_run_test_suite(greybus_gpio);
-    test_greybus_teardown();
+	ztest_test_suite(greybus_gpio, ztest_unit_test(test_greybus_gpio_protocol_version),
+			 ztest_unit_test(test_greybus_gpio_cport_shutdown),
+			 ztest_unit_test(test_greybus_gpio_line_count),
+			 ztest_unit_test(test_greybus_gpio_activate),
+			 ztest_unit_test(test_greybus_gpio_deactivate),
+			 ztest_unit_test(test_greybus_gpio_get_direction),
+			 ztest_unit_test(test_greybus_gpio_direction_input),
+			 ztest_unit_test(test_greybus_gpio_direction_output),
+			 ztest_unit_test(test_greybus_gpio_get_value),
+			 ztest_unit_test(test_greybus_gpio_set_value),
+			 ztest_unit_test(test_greybus_gpio_set_debounce),
+			 ztest_unit_test(test_greybus_gpio_irq_type),
+			 ztest_unit_test(test_greybus_gpio_irq_mask),
+			 ztest_unit_test(test_greybus_gpio_irq_unmask),
+			 ztest_unit_test(test_greybus_gpio_irq_event));
+	ztest_run_test_suite(greybus_gpio);
+	test_greybus_teardown();
 }

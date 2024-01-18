@@ -22,16 +22,15 @@ static void board_setup(void)
 extern void test_greybus_setup(void);
 extern void test_greybus_teardown(void);
 
-void test_main(void) {
+void test_main(void)
+{
 
 	board_setup();
 	test_greybus_setup();
-    ztest_test_suite(greybus_i2c,
-        ztest_unit_test(test_greybus_i2c_protocol_version),
-        ztest_unit_test(test_greybus_i2c_cport_shutdown),
-        ztest_unit_test(test_greybus_i2c_functionality),
-        ztest_unit_test(test_greybus_i2c_transfer)
-        );
-    ztest_run_test_suite(greybus_i2c);
-    test_greybus_teardown();
+	ztest_test_suite(greybus_i2c, ztest_unit_test(test_greybus_i2c_protocol_version),
+			 ztest_unit_test(test_greybus_i2c_cport_shutdown),
+			 ztest_unit_test(test_greybus_i2c_functionality),
+			 ztest_unit_test(test_greybus_i2c_transfer));
+	ztest_run_test_suite(greybus_i2c);
+	test_greybus_teardown();
 }

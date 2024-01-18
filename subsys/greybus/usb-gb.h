@@ -32,19 +32,19 @@
 #include <greybus/types.h>
 
 /* Version of the Greybus USB protocol we support */
-#define GB_USB_VERSION_MAJOR		0x00
-#define GB_USB_VERSION_MINOR		0x01
+#define GB_USB_VERSION_MAJOR 0x00
+#define GB_USB_VERSION_MINOR 0x01
 
 /* Greybus USB request types */
-#define GB_USB_TYPE_INVALID		GB_INVALID_TYPE
-#define GB_USB_TYPE_PROTOCOL_VERSION	0x01
-#define GB_USB_TYPE_HCD_START		0x02
-#define GB_USB_TYPE_HCD_STOP		0x03
-#define GB_USB_TYPE_HUB_CONTROL		0x04
+#define GB_USB_TYPE_INVALID          GB_INVALID_TYPE
+#define GB_USB_TYPE_PROTOCOL_VERSION 0x01
+#define GB_USB_TYPE_HCD_START        0x02
+#define GB_USB_TYPE_HCD_STOP         0x03
+#define GB_USB_TYPE_HUB_CONTROL      0x04
 
 struct gb_usb_proto_version_response {
-	__u8	major;
-	__u8	minor;
+	__u8 major;
+	__u8 minor;
 } __packed;
 
 struct gb_usb_hub_control_request {
@@ -59,4 +59,3 @@ struct gb_usb_hub_control_response {
 } __packed;
 
 #endif /* __USB_GB_H__ */
-

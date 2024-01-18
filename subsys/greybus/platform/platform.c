@@ -40,7 +40,7 @@ int gb_add_cport_device_mapping(unsigned int cport, const struct device *dev)
 	mutex_ret = k_mutex_lock(&map_mutex, K_FOREVER);
 	__ASSERT_NO_MSG(mutex_ret == 0);
 
-	for(idx = 0; idx < map_size; ++idx) {
+	for (idx = 0; idx < map_size; ++idx) {
 		entry = &map[idx];
 		if (entry->cport == cport) {
 			LOG_ERR("%u is already mapped to %s", cport, entry->dev->name);
@@ -88,7 +88,7 @@ int gb_device_to_cport(const struct device *dev)
 	mutex_ret = k_mutex_lock(&map_mutex, K_FOREVER);
 	__ASSERT_NO_MSG(mutex_ret == 0);
 
-	for(idx = 0; idx < map_size; ++idx) {
+	for (idx = 0; idx < map_size; ++idx) {
 		entry = &map[idx];
 		if (entry->dev == dev) {
 			ret = entry->cport;
@@ -96,7 +96,8 @@ int gb_device_to_cport(const struct device *dev)
 		}
 	}
 
-	LOG_ERR("no mapping for device %s", (dev == NULL) ? "(null)" : ((dev->name == NULL) ? "(null)" : dev->name));
+	LOG_ERR("no mapping for device %s",
+		(dev == NULL) ? "(null)" : ((dev->name == NULL) ? "(null)" : dev->name));
 	ret = -ENOENT;
 
 unlock:
@@ -116,7 +117,7 @@ const struct device *gb_cport_to_device(unsigned int cport)
 	mutex_ret = k_mutex_lock(&map_mutex, K_FOREVER);
 	__ASSERT_NO_MSG(mutex_ret == 0);
 
-	for(idx = 0; idx < map_size; ++idx) {
+	for (idx = 0; idx < map_size; ++idx) {
 		entry = &map[idx];
 		if (entry->cport == cport) {
 			ret = entry->dev;

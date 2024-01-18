@@ -18,8 +18,7 @@
 #define GPIO_DEV_NAME "GPIO_0"
 #endif
 
-static void gpio_sim_callback_handler(struct device *port,
-				      struct gpio_callback *cb,
+static void gpio_sim_callback_handler(struct device *port, struct gpio_callback *cb,
 				      gpio_port_pins_t pins)
 {
 	printf("%s(): GPIO changed\n", __func__);

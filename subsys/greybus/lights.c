@@ -49,7 +49,7 @@ LOG_MODULE_REGISTER(greybus_lights, CONFIG_GREYBUS_LOG_LEVEL);
  * The structure for Lights Protocol information
  */
 struct gb_lights_info {
-    unsigned int    cport;
+	unsigned int cport;
 };
 
 /**
@@ -65,27 +65,26 @@ struct gb_lights_info {
  */
 static int event_callback(void *data, uint8_t light_id, uint8_t event)
 {
-    struct gb_operation *operation;
-    struct gb_lights_event_request *request;
-    struct gb_lights_info *lights_info;
+	struct gb_operation *operation;
+	struct gb_lights_event_request *request;
+	struct gb_lights_info *lights_info;
 
-    DEBUGASSERT(data);
-    lights_info = data;
+	DEBUGASSERT(data);
+	lights_info = data;
 
-    operation = gb_operation_create(lights_info->cport, GB_LIGHTS_TYPE_EVENT,
-                                    sizeof(*request));
-    if (!operation) {
-        return -EIO;
-    }
+	operation = gb_operation_create(lights_info->cport, GB_LIGHTS_TYPE_EVENT, sizeof(*request));
+	if (!operation) {
+		return -EIO;
+	}
 
-    request = gb_operation_get_request_payload(operation);
-    request->light_id = light_id;
-    request->event = event;
+	request = gb_operation_get_request_payload(operation);
+	request->light_id = light_id;
+	request->event = event;
 
-    gb_operation_send_request_nowait(operation, NULL, false);
-    gb_operation_destroy(operation);
+	gb_operation_send_request_nowait(operation, NULL, false);
+	gb_operation_destroy(operation);
 
-    return 0;
+	return 0;
 }
 
 /**
@@ -99,17 +98,17 @@ static int event_callback(void *data, uint8_t light_id, uint8_t event)
  */
 static uint8_t gb_lights_protocol_version(struct gb_operation *operation)
 {
-    struct gb_lights_version_response *response;
+	struct gb_lights_version_response *response;
 
-    response = gb_operation_alloc_response(operation, sizeof(*response));
-    if (!response) {
-        return GB_OP_NO_MEMORY;
-    }
+	response = gb_operation_alloc_response(operation, sizeof(*response));
+	if (!response) {
+		return GB_OP_NO_MEMORY;
+	}
 
-    response->major = GB_LIGHTS_VERSION_MAJOR;
-    response->minor = GB_LIGHTS_VERSION_MINOR;
+	response->major = GB_LIGHTS_VERSION_MAJOR;
+	response->minor = GB_LIGHTS_VERSION_MINOR;
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 /**
@@ -123,25 +122,25 @@ static uint8_t gb_lights_protocol_version(struct gb_operation *operation)
  */
 static uint8_t gb_lights_get_lights(struct gb_operation *operation)
 {
-    struct gb_lights_get_lights_response *response;
-    struct gb_bundle *bundle;
-    int ret;
+	struct gb_lights_get_lights_response *response;
+	struct gb_bundle *bundle;
+	int ret;
 
-    bundle = gb_operation_get_bundle(operation);
-    DEBUGASSERT(bundle);
+	bundle = gb_operation_get_bundle(operation);
+	DEBUGASSERT(bundle);
 
-    response = gb_operation_alloc_response(operation, sizeof(*response));
-    if (!response) {
-        return GB_OP_NO_MEMORY;
-    }
+	response = gb_operation_alloc_response(operation, sizeof(*response));
+	if (!response) {
+		return GB_OP_NO_MEMORY;
+	}
 
-    /* get hardware lights count */
-    ret = device_lights_get_lights(bundle->dev, &response->lights_count);
-    if (ret) {
-        return gb_errno_to_op_result(ret);
-    }
+	/* get hardware lights count */
+	ret = device_lights_get_lights(bundle->dev, &response->lights_count);
+	if (ret) {
+		return gb_errno_to_op_result(ret);
+	}
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 /**
@@ -156,37 +155,37 @@ static uint8_t gb_lights_get_lights(struct gb_operation *operation)
  */
 static uint8_t gb_lights_get_light_config(struct gb_operation *operation)
 {
-    struct gb_lights_get_light_config_request *request;
-    struct gb_lights_get_light_config_response *response;
-    struct gb_bundle *bundle;
-    struct light_config cfg;
-    int ret;
+	struct gb_lights_get_light_config_request *request;
+	struct gb_lights_get_light_config_response *response;
+	struct gb_bundle *bundle;
+	struct light_config cfg;
+	int ret;
 
-    bundle = gb_operation_get_bundle(operation);
-    DEBUGASSERT(bundle);
+	bundle = gb_operation_get_bundle(operation);
+	DEBUGASSERT(bundle);
 
-    if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
-        LOG_ERR("dropping short message");
-        return GB_OP_INVALID;
-    }
+	if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
+		LOG_ERR("dropping short message");
+		return GB_OP_INVALID;
+	}
 
-    request = gb_operation_get_request_payload(operation);
+	request = gb_operation_get_request_payload(operation);
 
-    response = gb_operation_alloc_response(operation, sizeof(*response));
-    if (!response) {
-        return GB_OP_NO_MEMORY;
-    }
+	response = gb_operation_alloc_response(operation, sizeof(*response));
+	if (!response) {
+		return GB_OP_NO_MEMORY;
+	}
 
-    /* get hardware light config */
-    ret = device_lights_get_light_config(bundle->dev, request->id, &cfg);
-    if (ret) {
-        return gb_errno_to_op_result(ret);
-    }
+	/* get hardware light config */
+	ret = device_lights_get_light_config(bundle->dev, request->id, &cfg);
+	if (ret) {
+		return gb_errno_to_op_result(ret);
+	}
 
-    response->channel_count = cfg.channel_count;
-    memcpy(response->name, cfg.name, sizeof(cfg.name));
+	response->channel_count = cfg.channel_count;
+	memcpy(response->name, cfg.name, sizeof(cfg.name));
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 /**
@@ -202,42 +201,42 @@ static uint8_t gb_lights_get_light_config(struct gb_operation *operation)
  */
 static uint8_t gb_lights_get_channel_config(struct gb_operation *operation)
 {
-    struct gb_lights_get_channel_config_request *request;
-    struct gb_lights_get_channel_config_response *response;
-    struct gb_bundle *bundle;
-    struct channel_config cfg;
-    int ret;
+	struct gb_lights_get_channel_config_request *request;
+	struct gb_lights_get_channel_config_response *response;
+	struct gb_bundle *bundle;
+	struct channel_config cfg;
+	int ret;
 
-    bundle = gb_operation_get_bundle(operation);
-    DEBUGASSERT(bundle);
+	bundle = gb_operation_get_bundle(operation);
+	DEBUGASSERT(bundle);
 
-    if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
-        LOG_ERR("dropping short message");
-        return GB_OP_INVALID;
-    }
+	if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
+		LOG_ERR("dropping short message");
+		return GB_OP_INVALID;
+	}
 
-    request = gb_operation_get_request_payload(operation);
+	request = gb_operation_get_request_payload(operation);
 
-    response = gb_operation_alloc_response(operation, sizeof(*response));
-    if (!response) {
-        return GB_OP_NO_MEMORY;
-    }
+	response = gb_operation_alloc_response(operation, sizeof(*response));
+	if (!response) {
+		return GB_OP_NO_MEMORY;
+	}
 
-    /* get hardware channel config */
-    ret = device_lights_get_channel_config(bundle->dev, request->light_id,
-                                           request->channel_id, &cfg);
-    if (ret) {
-        return gb_errno_to_op_result(ret);
-    }
+	/* get hardware channel config */
+	ret = device_lights_get_channel_config(bundle->dev, request->light_id, request->channel_id,
+					       &cfg);
+	if (ret) {
+		return gb_errno_to_op_result(ret);
+	}
 
-    response->max_brightness = cfg.max_brightness;
-    response->flags = sys_cpu_to_le32(cfg.flags);
-    response->color = sys_cpu_to_le32(cfg.color);
-    memcpy(response->color_name, cfg.color_name, sizeof(cfg.color_name));
-    response->mode = sys_cpu_to_le32(cfg.mode);
-    memcpy(response->mode_name, cfg.mode_name, sizeof(cfg.mode_name));
+	response->max_brightness = cfg.max_brightness;
+	response->flags = sys_cpu_to_le32(cfg.flags);
+	response->color = sys_cpu_to_le32(cfg.color);
+	memcpy(response->color_name, cfg.color_name, sizeof(cfg.color_name));
+	response->mode = sys_cpu_to_le32(cfg.mode);
+	memcpy(response->mode_name, cfg.mode_name, sizeof(cfg.mode_name));
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 /**
@@ -251,46 +250,44 @@ static uint8_t gb_lights_get_channel_config(struct gb_operation *operation)
  * @param operation pointer to structure of Greybus operation message
  * @return GB_OP_SUCCESS on success, error code on failure
  */
-static uint8_t gb_lights_get_channel_flash_config(
-                                                struct gb_operation *operation)
+static uint8_t gb_lights_get_channel_flash_config(struct gb_operation *operation)
 {
-    struct gb_lights_get_channel_flash_config_request *request;
-    struct gb_lights_get_channel_flash_config_response *response;
-    struct gb_bundle *bundle;
-    struct channel_flash_config fcfg;
-    int ret;
+	struct gb_lights_get_channel_flash_config_request *request;
+	struct gb_lights_get_channel_flash_config_response *response;
+	struct gb_bundle *bundle;
+	struct channel_flash_config fcfg;
+	int ret;
 
-    bundle = gb_operation_get_bundle(operation);
-    DEBUGASSERT(bundle);
+	bundle = gb_operation_get_bundle(operation);
+	DEBUGASSERT(bundle);
 
-    if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
-        LOG_ERR("dropping short message");
-        return GB_OP_INVALID;
-    }
+	if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
+		LOG_ERR("dropping short message");
+		return GB_OP_INVALID;
+	}
 
-    request = gb_operation_get_request_payload(operation);
+	request = gb_operation_get_request_payload(operation);
 
-    response = gb_operation_alloc_response(operation, sizeof(*response));
-    if (!response) {
-        return GB_OP_NO_MEMORY;
-    }
+	response = gb_operation_alloc_response(operation, sizeof(*response));
+	if (!response) {
+		return GB_OP_NO_MEMORY;
+	}
 
-    /* get hardware channel flash config */
-    ret = device_lights_get_channel_flash_config(bundle->dev,
-                                                 request->light_id,
-                                                 request->channel_id, &fcfg);
-    if (ret) {
-        return gb_errno_to_op_result(ret);
-    }
+	/* get hardware channel flash config */
+	ret = device_lights_get_channel_flash_config(bundle->dev, request->light_id,
+						     request->channel_id, &fcfg);
+	if (ret) {
+		return gb_errno_to_op_result(ret);
+	}
 
-    response->intensity_min_uA = sys_cpu_to_le32(fcfg.intensity_min_uA);
-    response->intensity_max_uA = sys_cpu_to_le32(fcfg.intensity_max_uA);
-    response->intensity_step_uA = sys_cpu_to_le32(fcfg.intensity_step_uA);
-    response->timeout_min_us = sys_cpu_to_le32(fcfg.timeout_min_us);
-    response->timeout_max_us = sys_cpu_to_le32(fcfg.timeout_max_us);
-    response->timeout_step_us = sys_cpu_to_le32(fcfg.timeout_step_us);
+	response->intensity_min_uA = sys_cpu_to_le32(fcfg.intensity_min_uA);
+	response->intensity_max_uA = sys_cpu_to_le32(fcfg.intensity_max_uA);
+	response->intensity_step_uA = sys_cpu_to_le32(fcfg.intensity_step_uA);
+	response->timeout_min_us = sys_cpu_to_le32(fcfg.timeout_min_us);
+	response->timeout_max_us = sys_cpu_to_le32(fcfg.timeout_max_us);
+	response->timeout_step_us = sys_cpu_to_le32(fcfg.timeout_step_us);
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 /**
@@ -305,29 +302,28 @@ static uint8_t gb_lights_get_channel_flash_config(
  */
 static uint8_t gb_lights_set_brightness(struct gb_operation *operation)
 {
-    struct gb_lights_set_brightness_request *request;
-    struct gb_bundle *bundle;
-    int ret;
+	struct gb_lights_set_brightness_request *request;
+	struct gb_bundle *bundle;
+	int ret;
 
-    bundle = gb_operation_get_bundle(operation);
-    DEBUGASSERT(bundle);
+	bundle = gb_operation_get_bundle(operation);
+	DEBUGASSERT(bundle);
 
-    if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
-        LOG_ERR("dropping short message");
-        return GB_OP_INVALID;
-    }
+	if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
+		LOG_ERR("dropping short message");
+		return GB_OP_INVALID;
+	}
 
-    request = gb_operation_get_request_payload(operation);
+	request = gb_operation_get_request_payload(operation);
 
-    /* set brightness to channel */
-    ret = device_lights_set_brightness(bundle->dev, request->light_id,
-                                       request->channel_id,
-                                       request->brightness);
-    if (ret) {
-        return gb_errno_to_op_result(ret);
-    }
+	/* set brightness to channel */
+	ret = device_lights_set_brightness(bundle->dev, request->light_id, request->channel_id,
+					   request->brightness);
+	if (ret) {
+		return gb_errno_to_op_result(ret);
+	}
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 /**
@@ -342,30 +338,29 @@ static uint8_t gb_lights_set_brightness(struct gb_operation *operation)
  */
 static uint8_t gb_lights_set_blink(struct gb_operation *operation)
 {
-    struct gb_lights_set_blink_request *request;
-    struct gb_bundle *bundle;
-    int ret;
+	struct gb_lights_set_blink_request *request;
+	struct gb_bundle *bundle;
+	int ret;
 
-    bundle = gb_operation_get_bundle(operation);
-    DEBUGASSERT(bundle);
+	bundle = gb_operation_get_bundle(operation);
+	DEBUGASSERT(bundle);
 
-    if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
-        LOG_ERR("dropping short message");
-        return GB_OP_INVALID;
-    }
+	if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
+		LOG_ERR("dropping short message");
+		return GB_OP_INVALID;
+	}
 
-    request = gb_operation_get_request_payload(operation);
+	request = gb_operation_get_request_payload(operation);
 
-    /* set blink to channel */
-    ret = device_lights_set_blink(bundle->dev, request->light_id,
-                                  request->channel_id,
-                                  sys_le16_to_cpu(request->time_on_ms),
-                                  sys_le16_to_cpu(request->time_off_ms));
-    if (ret) {
-        return gb_errno_to_op_result(ret);
-    }
+	/* set blink to channel */
+	ret = device_lights_set_blink(bundle->dev, request->light_id, request->channel_id,
+				      sys_le16_to_cpu(request->time_on_ms),
+				      sys_le16_to_cpu(request->time_off_ms));
+	if (ret) {
+		return gb_errno_to_op_result(ret);
+	}
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 /**
@@ -379,29 +374,28 @@ static uint8_t gb_lights_set_blink(struct gb_operation *operation)
  */
 static uint8_t gb_lights_set_color(struct gb_operation *operation)
 {
-    struct gb_lights_set_color_request *request;
-    struct gb_bundle *bundle;
-    int ret;
+	struct gb_lights_set_color_request *request;
+	struct gb_bundle *bundle;
+	int ret;
 
-    bundle = gb_operation_get_bundle(operation);
-    DEBUGASSERT(bundle);
+	bundle = gb_operation_get_bundle(operation);
+	DEBUGASSERT(bundle);
 
-    if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
-        LOG_ERR("dropping short message");
-        return GB_OP_INVALID;
-    }
+	if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
+		LOG_ERR("dropping short message");
+		return GB_OP_INVALID;
+	}
 
-    request = gb_operation_get_request_payload(operation);
+	request = gb_operation_get_request_payload(operation);
 
-    /* set color to channel */
-    ret = device_lights_set_color(bundle->dev, request->light_id,
-                                  request->channel_id,
-                                  sys_le32_to_cpu(request->color));
-    if (ret) {
-        return gb_errno_to_op_result(ret);
-    }
+	/* set color to channel */
+	ret = device_lights_set_color(bundle->dev, request->light_id, request->channel_id,
+				      sys_le32_to_cpu(request->color));
+	if (ret) {
+		return gb_errno_to_op_result(ret);
+	}
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 /**
@@ -416,29 +410,28 @@ static uint8_t gb_lights_set_color(struct gb_operation *operation)
  */
 static uint8_t gb_lights_set_fade(struct gb_operation *operation)
 {
-    struct gb_lights_set_fade_request *request;
-    struct gb_bundle *bundle;
-    int ret;
+	struct gb_lights_set_fade_request *request;
+	struct gb_bundle *bundle;
+	int ret;
 
-    bundle = gb_operation_get_bundle(operation);
-    DEBUGASSERT(bundle);
+	bundle = gb_operation_get_bundle(operation);
+	DEBUGASSERT(bundle);
 
-    if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
-        LOG_ERR("dropping short message");
-        return GB_OP_INVALID;
-    }
+	if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
+		LOG_ERR("dropping short message");
+		return GB_OP_INVALID;
+	}
 
-    request = gb_operation_get_request_payload(operation);
+	request = gb_operation_get_request_payload(operation);
 
-    /* set fade to channel */
-    ret = device_lights_set_fade(bundle->dev, request->light_id,
-                                 request->channel_id, request->fade_in,
-                                 request->fade_out);
-    if (ret) {
-        return gb_errno_to_op_result(ret);
-    }
+	/* set fade to channel */
+	ret = device_lights_set_fade(bundle->dev, request->light_id, request->channel_id,
+				     request->fade_in, request->fade_out);
+	if (ret) {
+		return gb_errno_to_op_result(ret);
+	}
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 /**
@@ -453,29 +446,28 @@ static uint8_t gb_lights_set_fade(struct gb_operation *operation)
  */
 static uint8_t gb_lights_set_flash_intensity(struct gb_operation *operation)
 {
-    struct gb_lights_set_flash_intensity_request *request;
-    struct gb_bundle *bundle;
-    int ret;
+	struct gb_lights_set_flash_intensity_request *request;
+	struct gb_bundle *bundle;
+	int ret;
 
-    bundle = gb_operation_get_bundle(operation);
-    DEBUGASSERT(bundle);
+	bundle = gb_operation_get_bundle(operation);
+	DEBUGASSERT(bundle);
 
-    if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
-        LOG_ERR("dropping short message");
-        return GB_OP_INVALID;
-    }
+	if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
+		LOG_ERR("dropping short message");
+		return GB_OP_INVALID;
+	}
 
-    request = gb_operation_get_request_payload(operation);
+	request = gb_operation_get_request_payload(operation);
 
-    /* set flash intensity to channel */
-    ret = device_lights_set_flash_intensity(bundle->dev, request->light_id,
-                                            request->channel_id,
-                                            sys_le32_to_cpu(request->intensity_uA));
-    if (ret) {
-        return gb_errno_to_op_result(ret);
-    }
+	/* set flash intensity to channel */
+	ret = device_lights_set_flash_intensity(bundle->dev, request->light_id, request->channel_id,
+						sys_le32_to_cpu(request->intensity_uA));
+	if (ret) {
+		return gb_errno_to_op_result(ret);
+	}
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 /**
@@ -489,28 +481,28 @@ static uint8_t gb_lights_set_flash_intensity(struct gb_operation *operation)
  */
 static uint8_t gb_lights_set_flash_strobe(struct gb_operation *operation)
 {
-    struct gb_lights_set_flash_strobe_request *request;
-    struct gb_bundle *bundle;
-    int ret;
+	struct gb_lights_set_flash_strobe_request *request;
+	struct gb_bundle *bundle;
+	int ret;
 
-    bundle = gb_operation_get_bundle(operation);
-    DEBUGASSERT(bundle);
+	bundle = gb_operation_get_bundle(operation);
+	DEBUGASSERT(bundle);
 
-    if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
-        LOG_ERR("dropping short message");
-        return GB_OP_INVALID;
-    }
+	if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
+		LOG_ERR("dropping short message");
+		return GB_OP_INVALID;
+	}
 
-    request = gb_operation_get_request_payload(operation);
+	request = gb_operation_get_request_payload(operation);
 
-    /* set flash strobe to channel */
-    ret = device_lights_set_flash_strobe(bundle->dev, request->light_id,
-                                         request->channel_id, request->state);
-    if (ret) {
-        return gb_errno_to_op_result(ret);
-    }
+	/* set flash strobe to channel */
+	ret = device_lights_set_flash_strobe(bundle->dev, request->light_id, request->channel_id,
+					     request->state);
+	if (ret) {
+		return gb_errno_to_op_result(ret);
+	}
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 /**
@@ -525,29 +517,28 @@ static uint8_t gb_lights_set_flash_strobe(struct gb_operation *operation)
  */
 static uint8_t gb_lights_set_flash_timeout(struct gb_operation *operation)
 {
-    struct gb_lights_set_flash_timeout_request *request;
-    struct gb_bundle *bundle;
-    int ret;
+	struct gb_lights_set_flash_timeout_request *request;
+	struct gb_bundle *bundle;
+	int ret;
 
-    bundle = gb_operation_get_bundle(operation);
-    DEBUGASSERT(bundle);
+	bundle = gb_operation_get_bundle(operation);
+	DEBUGASSERT(bundle);
 
-    if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
-        LOG_ERR("dropping short message");
-        return GB_OP_INVALID;
-    }
+	if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
+		LOG_ERR("dropping short message");
+		return GB_OP_INVALID;
+	}
 
-    request = gb_operation_get_request_payload(operation);
+	request = gb_operation_get_request_payload(operation);
 
-    /* set flash timeout to channel */
-    ret = device_lights_set_flash_timeout(bundle->dev, request->light_id,
-                                          request->channel_id,
-                                          sys_le32_to_cpu(request->timeout_us));
-    if (ret) {
-        return gb_errno_to_op_result(ret);
-    }
+	/* set flash timeout to channel */
+	ret = device_lights_set_flash_timeout(bundle->dev, request->light_id, request->channel_id,
+					      sys_le32_to_cpu(request->timeout_us));
+	if (ret) {
+		return gb_errno_to_op_result(ret);
+	}
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 /**
@@ -561,36 +552,36 @@ static uint8_t gb_lights_set_flash_timeout(struct gb_operation *operation)
  */
 static uint8_t gb_lights_get_flash_fault(struct gb_operation *operation)
 {
-    struct gb_lights_get_flash_fault_request *request;
-    struct gb_lights_get_flash_fault_response *response;
-    struct gb_bundle *bundle;
-    int ret;
+	struct gb_lights_get_flash_fault_request *request;
+	struct gb_lights_get_flash_fault_response *response;
+	struct gb_bundle *bundle;
+	int ret;
 
-    bundle = gb_operation_get_bundle(operation);
-    DEBUGASSERT(bundle);
+	bundle = gb_operation_get_bundle(operation);
+	DEBUGASSERT(bundle);
 
-    if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
-        LOG_ERR("dropping short message");
-        return GB_OP_INVALID;
-    }
+	if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
+		LOG_ERR("dropping short message");
+		return GB_OP_INVALID;
+	}
 
-    request = gb_operation_get_request_payload(operation);
+	request = gb_operation_get_request_payload(operation);
 
-    response = gb_operation_alloc_response(operation, sizeof(*response));
-    if (!response) {
-        return GB_OP_NO_MEMORY;
-    }
+	response = gb_operation_alloc_response(operation, sizeof(*response));
+	if (!response) {
+		return GB_OP_NO_MEMORY;
+	}
 
-    /* get hardware flash fault */
-    ret = device_lights_get_flash_fault(bundle->dev, request->light_id,
-                                        request->channel_id, &response->fault);
-    if (ret) {
-        return gb_errno_to_op_result(ret);
-    }
+	/* get hardware flash fault */
+	ret = device_lights_get_flash_fault(bundle->dev, request->light_id, request->channel_id,
+					    &response->fault);
+	if (ret) {
+		return gb_errno_to_op_result(ret);
+	}
 
-    response->fault = sys_cpu_to_le32(response->fault);
+	response->fault = sys_cpu_to_le32(response->fault);
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 /**
@@ -602,41 +593,40 @@ static uint8_t gb_lights_get_flash_fault(struct gb_operation *operation)
  */
 static int gb_lights_init(unsigned int cport, struct gb_bundle *bundle)
 {
-    struct gb_lights_info *lights_info;
-    int ret;
+	struct gb_lights_info *lights_info;
+	int ret;
 
-    DEBUGASSERT(bundle);
+	DEBUGASSERT(bundle);
 
-    lights_info = zalloc(sizeof(*lights_info));
-    if (!lights_info) {
-        return -ENOMEM;
-    }
+	lights_info = zalloc(sizeof(*lights_info));
+	if (!lights_info) {
+		return -ENOMEM;
+	}
 
-    lights_info->cport = cport;
+	lights_info->cport = cport;
 
-    bundle->dev = device_open(DEVICE_TYPE_LIGHTS_HW, 0);
-    if (!bundle->dev) {
-        ret = -EIO;
-        goto err_free_info;
-    }
+	bundle->dev = device_open(DEVICE_TYPE_LIGHTS_HW, 0);
+	if (!bundle->dev) {
+		ret = -EIO;
+		goto err_free_info;
+	}
 
-    ret = device_lights_register_callback(bundle->dev, event_callback,
-                                          lights_info);
-    if (ret) {
-        goto err_close_device;
-    }
+	ret = device_lights_register_callback(bundle->dev, event_callback, lights_info);
+	if (ret) {
+		goto err_close_device;
+	}
 
-    bundle->priv = lights_info;
+	bundle->priv = lights_info;
 
-    return 0;
+	return 0;
 
 err_close_device:
-    device_close(bundle->dev);
+	device_close(bundle->dev);
 
 err_free_info:
-    free(lights_info);
+	free(lights_info);
 
-    return ret;
+	return ret;
 }
 
 /**
@@ -647,45 +637,43 @@ err_free_info:
  */
 static void gb_lights_exit(unsigned int cport, struct gb_bundle *bundle)
 {
-    struct gb_lights_info *lights_info;
+	struct gb_lights_info *lights_info;
 
-    DEBUGASSERT(bundle);
-    lights_info = bundle->priv;
+	DEBUGASSERT(bundle);
+	lights_info = bundle->priv;
 
-    device_lights_unregister_callback(bundle->dev);
+	device_lights_unregister_callback(bundle->dev);
 
-    device_close(bundle->dev);
+	device_close(bundle->dev);
 
-    free(lights_info);
-    lights_info = NULL;
+	free(lights_info);
+	lights_info = NULL;
 }
 
 /**
  * @brief Greybus Lights Protocol operation handler
  */
 static struct gb_operation_handler gb_lights_handlers[] = {
-    GB_HANDLER(GB_LIGHTS_TYPE_PROTOCOL_VERSION, gb_lights_protocol_version),
-    GB_HANDLER(GB_LIGHTS_TYPE_GET_LIGHTS, gb_lights_get_lights),
-    GB_HANDLER(GB_LIGHTS_TYPE_GET_LIGHT_CONFIG, gb_lights_get_light_config),
-    GB_HANDLER(GB_LIGHTS_TYPE_GET_CHANNEL_CONFIG, gb_lights_get_channel_config),
-    GB_HANDLER(GB_LIGHTS_TYPE_GET_CHANNEL_FLASH_CONFIG,
-               gb_lights_get_channel_flash_config),
-    GB_HANDLER(GB_LIGHTS_TYPE_SET_BRIGHTNESS, gb_lights_set_brightness),
-    GB_HANDLER(GB_LIGHTS_TYPE_SET_BLINK, gb_lights_set_blink),
-    GB_HANDLER(GB_LIGHTS_TYPE_SET_COLOR, gb_lights_set_color),
-    GB_HANDLER(GB_LIGHTS_TYPE_SET_FADE, gb_lights_set_fade),
-    GB_HANDLER(GB_LIGHTS_TYPE_SET_FLASH_INTENSITY,
-               gb_lights_set_flash_intensity),
-    GB_HANDLER(GB_LIGHTS_TYPE_SET_FLASH_STROBE, gb_lights_set_flash_strobe),
-    GB_HANDLER(GB_LIGHTS_TYPE_SET_FLASH_TIMEOUT, gb_lights_set_flash_timeout),
-    GB_HANDLER(GB_LIGHTS_TYPE_GET_FLASH_FAULT, gb_lights_get_flash_fault),
+	GB_HANDLER(GB_LIGHTS_TYPE_PROTOCOL_VERSION, gb_lights_protocol_version),
+	GB_HANDLER(GB_LIGHTS_TYPE_GET_LIGHTS, gb_lights_get_lights),
+	GB_HANDLER(GB_LIGHTS_TYPE_GET_LIGHT_CONFIG, gb_lights_get_light_config),
+	GB_HANDLER(GB_LIGHTS_TYPE_GET_CHANNEL_CONFIG, gb_lights_get_channel_config),
+	GB_HANDLER(GB_LIGHTS_TYPE_GET_CHANNEL_FLASH_CONFIG, gb_lights_get_channel_flash_config),
+	GB_HANDLER(GB_LIGHTS_TYPE_SET_BRIGHTNESS, gb_lights_set_brightness),
+	GB_HANDLER(GB_LIGHTS_TYPE_SET_BLINK, gb_lights_set_blink),
+	GB_HANDLER(GB_LIGHTS_TYPE_SET_COLOR, gb_lights_set_color),
+	GB_HANDLER(GB_LIGHTS_TYPE_SET_FADE, gb_lights_set_fade),
+	GB_HANDLER(GB_LIGHTS_TYPE_SET_FLASH_INTENSITY, gb_lights_set_flash_intensity),
+	GB_HANDLER(GB_LIGHTS_TYPE_SET_FLASH_STROBE, gb_lights_set_flash_strobe),
+	GB_HANDLER(GB_LIGHTS_TYPE_SET_FLASH_TIMEOUT, gb_lights_set_flash_timeout),
+	GB_HANDLER(GB_LIGHTS_TYPE_GET_FLASH_FAULT, gb_lights_get_flash_fault),
 };
 
 static struct gb_driver gb_lights_driver = {
-    .init = gb_lights_init,
-    .exit = gb_lights_exit,
-    .op_handlers = gb_lights_handlers,
-    .op_handlers_count = ARRAY_SIZE(gb_lights_handlers),
+	.init = gb_lights_init,
+	.exit = gb_lights_exit,
+	.op_handlers = gb_lights_handlers,
+	.op_handlers_count = ARRAY_SIZE(gb_lights_handlers),
 };
 
 /**
@@ -696,5 +684,5 @@ static struct gb_driver gb_lights_driver = {
  */
 void gb_lights_register(int cport, int bundle)
 {
-    gb_register_driver(cport, bundle, &gb_lights_driver);
+	gb_register_driver(cport, bundle, &gb_lights_driver);
 }

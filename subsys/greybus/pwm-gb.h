@@ -31,95 +31,94 @@
 
 #include <greybus/types.h>
 
-#define GB_PWM_PROTOCOL_VERSION         0x01
-#define GB_PWM_PROTOCOL_COUNT           0x02
-#define GB_PWM_PROTOCOL_ACTIVATE        0x03
-#define GB_PWM_PROTOCOL_DEACTIVATE      0x04
-#define GB_PWM_PROTOCOL_CONFIG          0x05
-#define GB_PWM_PROTOCOL_POLARITY        0x06
-#define GB_PWM_PROTOCOL_ENABLE          0x07
-#define GB_PWM_PROTOCOL_DISABLE         0x08
+#define GB_PWM_PROTOCOL_VERSION    0x01
+#define GB_PWM_PROTOCOL_COUNT      0x02
+#define GB_PWM_PROTOCOL_ACTIVATE   0x03
+#define GB_PWM_PROTOCOL_DEACTIVATE 0x04
+#define GB_PWM_PROTOCOL_CONFIG     0x05
+#define GB_PWM_PROTOCOL_POLARITY   0x06
+#define GB_PWM_PROTOCOL_ENABLE     0x07
+#define GB_PWM_PROTOCOL_DISABLE    0x08
 
 struct gb_pwm_version_request {
-    /** Offered PWM Protocol major version. */
-    __u8    offer_major;
+	/** Offered PWM Protocol major version. */
+	__u8 offer_major;
 
-    /** Offered PWM Protocol minor version. */
-    __u8    offer_minor;
+	/** Offered PWM Protocol minor version. */
+	__u8 offer_minor;
 } __packed;
 
 struct gb_pwm_version_response {
-    /** PWM Protocol major version */
-    __u8    major;
+	/** PWM Protocol major version */
+	__u8 major;
 
-    /** PWM Protocol minor version */
-    __u8    minor;
+	/** PWM Protocol minor version */
+	__u8 minor;
 } __packed;
 
 /**
  * Count request has no payload.
  */
 struct gb_pwm_count_response {
-    /** Number of PWM generator minus 1. */
-    __u8    count;
+	/** Number of PWM generator minus 1. */
+	__u8 count;
 } __packed;
 
 /**
  * Activate response has no payload.
  */
 struct gb_pwm_activate_request {
-    /** Controller-relative PWM generator number. */
-    __u8    which;
+	/** Controller-relative PWM generator number. */
+	__u8 which;
 } __packed;
 
 /**
  * Deactivate response has no payload.
  */
 struct gb_pwm_dectivate_request {
-    /** Controller-relative PWM generator number. */
-    __u8    which;
+	/** Controller-relative PWM generator number. */
+	__u8 which;
 } __packed;
 
 /**
  * config response has no payload.
  */
 struct gb_pwm_config_request {
-    /** Controller-relative PWM generator number */
-    __u8    which;
+	/** Controller-relative PWM generator number */
+	__u8 which;
 
-    /** Active time (in nanoseconds). */
-    __le32  duty;
+	/** Active time (in nanoseconds). */
+	__le32 duty;
 
-    /** Period (in nanoseconds). */
-    __le32  period;
+	/** Period (in nanoseconds). */
+	__le32 period;
 } __packed;
 
 /**
  * Set polarity response has no payload.
  */
 struct gb_pwm_polarity_request {
-    /** Controller-relative PWM generator number. */
-    __u8    which;
+	/** Controller-relative PWM generator number. */
+	__u8 which;
 
-    /** 0 for normal, 1 for inverted. */
-    __u8    polarity;
+	/** 0 for normal, 1 for inverted. */
+	__u8 polarity;
 } __packed;
 
 /**
  * Enable response has no payload.
  */
 struct gb_pwm_enable_request {
-    /** Controller-relative PWM generator number. */
-    __u8    which;
+	/** Controller-relative PWM generator number. */
+	__u8 which;
 } __packed;
 
 /**
  *  Disable response has no payload.
  */
 struct gb_pwm_disable_request {
-    /** Controller-relative PWM generator number */
-    __u8    which;
+	/** Controller-relative PWM generator number */
+	__u8 which;
 } __packed;
 
 #endif /* _GREYBUS_PWM_H_ */
-

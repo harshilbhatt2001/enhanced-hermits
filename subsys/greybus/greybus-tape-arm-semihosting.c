@@ -34,47 +34,47 @@
 
 static ssize_t gb_tape_write(int fd, const void *data, size_t size)
 {
-    return semihosting_write(fd, data, size);
+	return semihosting_write(fd, data, size);
 }
 
 static ssize_t gb_tape_read(int fd, void *data, size_t size)
 {
-    return semihosting_read(fd, data, size);
+	return semihosting_read(fd, data, size);
 }
 
 static int gb_tape_open(const char *tape, int mode)
 {
-    int semihosting_mode;
+	int semihosting_mode;
 
-    switch (mode) {
-    case GB_TAPE_RDONLY:
-        semihosting_mode = SEMIHOSTING_RDONLY;
-        break;
+	switch (mode) {
+	case GB_TAPE_RDONLY:
+		semihosting_mode = SEMIHOSTING_RDONLY;
+		break;
 
-    case GB_TAPE_WRONLY:
-        semihosting_mode = SEMIHOSTING_WRONLY;
-        break;
+	case GB_TAPE_WRONLY:
+		semihosting_mode = SEMIHOSTING_WRONLY;
+		break;
 
-    default:
-        return -EINVAL;
-    }
+	default:
+		return -EINVAL;
+	}
 
-    return semihosting_open(tape, semihosting_mode);
+	return semihosting_open(tape, semihosting_mode);
 }
 
 static void gb_tape_close(int fd)
 {
-    semihosting_close(fd);
+	semihosting_close(fd);
 }
 
 static struct gb_tape_mechanism gb_tape_arm_semihosting = {
-    .open = gb_tape_open,
-    .close = gb_tape_close,
-    .write = gb_tape_write,
-    .read = gb_tape_read,
+	.open = gb_tape_open,
+	.close = gb_tape_close,
+	.write = gb_tape_write,
+	.read = gb_tape_read,
 };
 
 int gb_tape_arm_semihosting_register(void)
 {
-    return gb_tape_register_mechanism(&gb_tape_arm_semihosting);
+	return gb_tape_register_mechanism(&gb_tape_arm_semihosting);
 }
