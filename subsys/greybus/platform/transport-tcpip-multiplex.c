@@ -34,11 +34,24 @@ DNS_SD_REGISTER_TCP_SERVICE(gb_service_advertisement, CONFIG_NET_HOSTNAME, "_gre
 K_HEAP_DEFINE(gb_trans_heap, GB_TRANS_HEAP_SIZE);
 K_THREAD_STACK_DEFINE(gb_trans_rx_stack, GB_TRANS_RX_STACK_SIZE);
 
+/*
+ * struct gb_message_in_transport: The format of message over socket
+ *
+ * @cport: The cport on the node
+ * @msg: Pointer to start of message
+ */
 struct gb_message_in_transport {
 	uint16_t cport;
 	struct gb_operation_hdr *msg;
 };
 
+/*
+ * struct gb_trans_ctx: Transport Context
+ *
+ * @rx_thread: rx_thread
+ * @server_sock: socket on which the server listens for connections
+ * @client_sock: socket with connection to a client
+ */
 struct gb_trans_ctx {
 	struct k_thread rx_thread;
 	int server_sock;
@@ -47,6 +60,9 @@ struct gb_trans_ctx {
 
 static struct gb_trans_ctx ctx;
 
+/*
+ * Helper to read data from socket
+ */
 static int read_data(int sock, void *data, size_t len)
 {
 	int ret, received = 0;
@@ -65,6 +81,10 @@ static int read_data(int sock, void *data, size_t len)
 	return received;
 }
 
+
+/*
+ * Helper to write data to socket
+ */
 static int write_data(int sock, const void *data, size_t len)
 {
 	int ret, transmitted = 0;
@@ -80,6 +100,9 @@ static int write_data(int sock, const void *data, size_t len)
 	return transmitted;
 }
 
+/*
+ * Helper to allocation a greybus message
+ */
 static struct gb_operation_hdr *gb_message_alloc(struct gb_operation_hdr *hdr)
 {
 	struct gb_operation_hdr *msg = k_heap_alloc(&gb_trans_heap, hdr->size, K_NO_WAIT);
@@ -90,6 +113,9 @@ static struct gb_operation_hdr *gb_message_alloc(struct gb_operation_hdr *hdr)
 	return msg;
 }
 
+/*
+ * Helper to free a greybus message
+ */
 static void gb_message_dealloc(struct gb_operation_hdr *msg)
 {
 	k_heap_free(&gb_trans_heap, msg);
@@ -100,6 +126,9 @@ static size_t gb_message_payload_len(const struct gb_operation_hdr *msg)
 	return msg->size - sizeof(struct gb_operation_hdr);
 }
 
+/*
+ * Helper to receive a greybus message from socket
+ */
 static struct gb_message_in_transport gb_message_receive(int sock, bool *flag)
 {
 	int ret;
@@ -313,6 +342,9 @@ static int netsetup()
 	return sock;
 }
 
+/*
+ * Helper to accept new connection
+ */
 static void gb_trans_accept(struct gb_trans_ctx *ctx)
 {
 	int ret;
@@ -344,6 +376,9 @@ static void gb_trans_accept(struct gb_trans_ctx *ctx)
 	LOG_INF("Accepted new connection");
 }
 
+/*
+ * Helper to receive messages if socket connection is established
+ */
 static void gb_trans_rx(struct gb_trans_ctx *ctx)
 {
 	int ret;
@@ -382,6 +417,9 @@ static void gb_trans_rx(struct gb_trans_ctx *ctx)
 	}
 }
 
+/*
+ * Hander function for rx thread
+ */
 static void gb_trans_rx_thread_handler(void *p1, void *p2, void *p3)
 {
 	while (true) {
