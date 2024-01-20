@@ -38,9 +38,13 @@
 void gb_loopback_log_entry(unsigned int cport);
 void gb_loopback_log_exit(unsigned int cport, struct gb_operation *operation, size_t size);
 #else
-static inline void gb_loopback_log_entry(unsigned int cport){}
-static inline void gb_loopback_log_exit(unsigned int cport, struct gb_operation *operation, size_t size){}
+static inline void gb_loopback_log_entry(unsigned int cport)
+{
+}
+static inline void gb_loopback_log_exit(unsigned int cport, struct gb_operation *operation,
+					size_t size)
+{
+}
 #endif
-
 
 #endif

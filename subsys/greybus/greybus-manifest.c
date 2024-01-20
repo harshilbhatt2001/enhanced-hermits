@@ -38,11 +38,10 @@
 #include <list.h>
 #include <zephyr/sys/byteorder.h>
 #include <greybus-utils/utils.h>
-//#include <nuttx/util.h>
+// #include <nuttx/util.h>
 
-#if defined(CONFIG_BOARD_NATIVE_POSIX_64BIT) \
-    || defined(CONFIG_BOARD_NATIVE_POSIX_32BIT) \
-    || defined(CONFIG_BOARD_NRF52_BSIM)
+#if defined(CONFIG_BOARD_NATIVE_POSIX_64BIT) || defined(CONFIG_BOARD_NATIVE_POSIX_32BIT) ||        \
+	defined(CONFIG_BOARD_NRF52_BSIM)
 #include <semaphore.h>
 #else
 #include <zephyr/posix/semaphore.h>
@@ -53,9 +52,9 @@ LOG_MODULE_REGISTER(greybus_manifest, CONFIG_GREYBUS_LOG_LEVEL);
 
 #undef ALIGN
 #undef PAD
-#define PAD(x,pot) (((x) & (pot-1)) ? (((x) & ~(pot-1)) + pot) : (x))
+#define PAD(x, pot) (((x) & (pot - 1)) ? (((x) & ~(pot - 1)) + pot) : (x))
 // "align" (really pad) to a 4-byte boundary
-#define ALIGN(x) PAD(x,4)
+#define ALIGN(x)    PAD(x, 4)
 
 // not yet a part of zephyr minimal libc??
 extern char *strtok(char *str, const char *delim);
@@ -78,26 +77,26 @@ extern void gb_audio_mgmt_register(int cport, int bundle);
 extern void gb_audio_data_register(int cport, int bundle);
 
 struct greybus {
-    struct list_head cports;
-    struct greybus_driver *drv;
-    size_t max_bundle_id;
-    size_t max_property_id;
-    size_t max_device_id;
-    size_t max_string_id;
-    size_t max_patch_property_id;
-    size_t max_patch_device_id;
-    size_t max_patch_string_id;
+	struct list_head cports;
+	struct greybus_driver *drv;
+	size_t max_bundle_id;
+	size_t max_property_id;
+	size_t max_device_id;
+	size_t max_string_id;
+	size_t max_patch_property_id;
+	size_t max_patch_device_id;
+	size_t max_patch_string_id;
 };
 
 static struct greybus g_greybus = {
-    .cports = LIST_INIT(g_greybus.cports),
-    .max_bundle_id = 0,
-    .max_device_id = 0,
-    .max_string_id = 0,
-    .max_property_id = 0,
-    .max_patch_property_id = 0,
-    .max_patch_device_id = 0,
-    .max_patch_string_id = 0,
+	.cports = LIST_INIT(g_greybus.cports),
+	.max_bundle_id = 0,
+	.max_device_id = 0,
+	.max_string_id = 0,
+	.max_property_id = 0,
+	.max_patch_property_id = 0,
+	.max_patch_device_id = 0,
+	.max_patch_string_id = 0,
 };
 
 #ifdef CONFIG_GREYBUS_STATIC_MANIFEST
@@ -108,153 +107,156 @@ static unsigned char *bridge_manifest;
 
 static void *alloc_cport(void)
 {
-    struct gb_cport *gb_cport;
+	struct gb_cport *gb_cport;
 
-    gb_cport = malloc(sizeof(struct gb_cport));
-    if (!gb_cport)
-        return NULL;
+	gb_cport = malloc(sizeof(struct gb_cport));
+	if (!gb_cport) {
+		return NULL;
+	}
 
-    list_add(&g_greybus.cports, &gb_cport->list);
-    return gb_cport;
+	list_add(&g_greybus.cports, &gb_cport->list);
+	return gb_cport;
 }
 
 static void free_cport(int cportid)
 {
-    struct gb_cport *gb_cport;
-    struct list_head *iter, *next;
-    list_foreach_safe(&g_greybus.cports, iter, next) {
-        gb_cport = list_entry(iter, struct gb_cport, list);
-        if (gb_cport->id == cportid) {
-            list_del(iter);
-            free(gb_cport);
-        }
-    }
+	struct gb_cport *gb_cport;
+	struct list_head *iter, *next;
+	list_foreach_safe(&g_greybus.cports, iter, next)
+	{
+		gb_cport = list_entry(iter, struct gb_cport, list);
+		if (gb_cport->id == cportid) {
+			list_del(iter);
+			free(gb_cport);
+		}
+	}
 }
 
 #ifdef CONFIG_GREYBUS
 void enable_cports(void)
 {
-    struct list_head *iter;
-    struct gb_cport *gb_cport;
-    __attribute__((unused)) int cport_id;
-    __attribute__((unused)) int bundle_id;
-    __attribute__((unused)) int protocol;
-    list_foreach(&g_greybus.cports, iter) {
-        gb_cport = list_entry(iter, struct gb_cport, list);
-        cport_id = gb_cport->id;
-        bundle_id = gb_cport->bundle;
-        protocol = gb_cport->protocol;
+	struct list_head *iter;
+	struct gb_cport *gb_cport;
+	__attribute__((unused)) int cport_id;
+	__attribute__((unused)) int bundle_id;
+	__attribute__((unused)) int protocol;
+	list_foreach(&g_greybus.cports, iter)
+	{
+		gb_cport = list_entry(iter, struct gb_cport, list);
+		cport_id = gb_cport->id;
+		bundle_id = gb_cport->bundle;
+		protocol = gb_cport->protocol;
 
 #ifdef CONFIG_GREYBUS_CONTROL
-        if (protocol == GREYBUS_PROTOCOL_CONTROL) {
-            LOG_INF("Registering CONTROL greybus driver.");
-            gb_control_register(cport_id, bundle_id);
-        }
+		if (protocol == GREYBUS_PROTOCOL_CONTROL) {
+			LOG_INF("Registering CONTROL greybus driver.");
+			gb_control_register(cport_id, bundle_id);
+		}
 #endif
 
 #ifdef CONFIG_GREYBUS_GPIO
-        if (protocol == GREYBUS_PROTOCOL_GPIO) {
-            LOG_INF("Registering GPIO greybus driver.");
-            gb_gpio_register(cport_id, bundle_id);
-        }
+		if (protocol == GREYBUS_PROTOCOL_GPIO) {
+			LOG_INF("Registering GPIO greybus driver.");
+			gb_gpio_register(cport_id, bundle_id);
+		}
 #endif
 
 #ifdef CONFIG_GREYBUS_I2C
-        if (protocol == GREYBUS_PROTOCOL_I2C) {
-            LOG_INF("Registering I2C greybus driver.");
-            gb_i2c_register(cport_id, bundle_id);
-        }
+		if (protocol == GREYBUS_PROTOCOL_I2C) {
+			LOG_INF("Registering I2C greybus driver.");
+			gb_i2c_register(cport_id, bundle_id);
+		}
 #endif
 
 #ifdef CONFIG_GREYBUS_POWER_SUPPLY
-        if (protocol == GREYBUS_PROTOCOL_POWER_SUPPLY) {
-            LOG_INF("Registering POWER_SUPPLY greybus driver.");
-            gb_power_supply_register(cport_id, bundle_id);
-        }
+		if (protocol == GREYBUS_PROTOCOL_POWER_SUPPLY) {
+			LOG_INF("Registering POWER_SUPPLY greybus driver.");
+			gb_power_supply_register(cport_id, bundle_id);
+		}
 #endif
 
 #ifdef CONFIG_GREYBUS_LOOPBACK
-        if (protocol == GREYBUS_PROTOCOL_LOOPBACK) {
-            LOG_INF("Registering Loopback greybus driver.");
-            gb_loopback_register(cport_id, bundle_id);
-        }
+		if (protocol == GREYBUS_PROTOCOL_LOOPBACK) {
+			LOG_INF("Registering Loopback greybus driver.");
+			gb_loopback_register(cport_id, bundle_id);
+		}
 #endif
 
 #ifdef CONFIG_GREYBUS_VIBRATOR
-        if (protocol == GREYBUS_PROTOCOL_VIBRATOR) {
-            LOG_INF("Registering VIBRATOR greybus driver.");
-            gb_vibrator_register(cport_id, bundle_id);
-        }
+		if (protocol == GREYBUS_PROTOCOL_VIBRATOR) {
+			LOG_INF("Registering VIBRATOR greybus driver.");
+			gb_vibrator_register(cport_id, bundle_id);
+		}
 #endif
 
 #ifdef CONFIG_GREYBUS_USB_HOST
-        if (protocol == GREYBUS_PROTOCOL_USB) {
-            LOG_INF("Registering USB greybus driver.");
-            gb_usb_register(cport_id, bundle_id);
-        }
+		if (protocol == GREYBUS_PROTOCOL_USB) {
+			LOG_INF("Registering USB greybus driver.");
+			gb_usb_register(cport_id, bundle_id);
+		}
 #endif
 
 #ifdef CONFIG_GREYBUS_PWM
-        if (protocol == GREYBUS_PROTOCOL_PWM) {
-            LOG_INF("Registering PWM greybus driver.");
-            gb_pwm_register(cport_id, bundle_id);
-        }
+		if (protocol == GREYBUS_PROTOCOL_PWM) {
+			LOG_INF("Registering PWM greybus driver.");
+			gb_pwm_register(cport_id, bundle_id);
+		}
 #endif
 
 #ifdef CONFIG_GREYBUS_SPI
-        if (protocol == GREYBUS_PROTOCOL_SPI) {
-            LOG_INF("Registering SPI greybus driver.");
-            gb_spi_register(cport_id, bundle_id);
-        }
+		if (protocol == GREYBUS_PROTOCOL_SPI) {
+			LOG_INF("Registering SPI greybus driver.");
+			gb_spi_register(cport_id, bundle_id);
+		}
 #endif
 
 #ifdef CONFIG_GREYBUS_UART
-        if (protocol == GREYBUS_PROTOCOL_UART) {
-            LOG_INF("Registering Uart greybus driver. id= %d", cport_id);
-            gb_uart_register(cport_id, bundle_id);
-        }
+		if (protocol == GREYBUS_PROTOCOL_UART) {
+			LOG_INF("Registering Uart greybus driver. id= %d", cport_id);
+			gb_uart_register(cport_id, bundle_id);
+		}
 #endif
 
 #ifdef CONFIG_GREYBUS_HID
-        if (protocol == GREYBUS_PROTOCOL_HID) {
-            LOG_INF("Registering HID greybus driver. id= %d", cport_id);
-            gb_hid_register(cport_id, bundle_id);
-        }
+		if (protocol == GREYBUS_PROTOCOL_HID) {
+			LOG_INF("Registering HID greybus driver. id= %d", cport_id);
+			gb_hid_register(cport_id, bundle_id);
+		}
 #endif
 
 #ifdef CONFIG_GREYBUS_LIGHTS
-        if (protocol == GREYBUS_PROTOCOL_LIGHTS) {
-            LOG_INF("Registering Lights greybus driver. id= %d", cport_id);
-            gb_lights_register(cport_id, bundle_id);
-        }
+		if (protocol == GREYBUS_PROTOCOL_LIGHTS) {
+			LOG_INF("Registering Lights greybus driver. id= %d", cport_id);
+			gb_lights_register(cport_id, bundle_id);
+		}
 #endif
 
 #ifdef CONFIG_GREYBUS_SDIO
-        if (protocol == GREYBUS_PROTOCOL_SDIO) {
-            LOG_INF("Registering SDIO greybus driver.");
-            gb_sdio_register(cport_id, bundle_id);
-        }
+		if (protocol == GREYBUS_PROTOCOL_SDIO) {
+			LOG_INF("Registering SDIO greybus driver.");
+			gb_sdio_register(cport_id, bundle_id);
+		}
 #endif
 
 #ifdef CONFIG_GREYBUS_CAMERA
-        if (protocol == GREYBUS_PROTOCOL_CAMERA_MGMT) {
-            LOG_INF("Registering Camera greybus driver. id= %d", cport_id);
-            gb_camera_register(cport_id, bundle_id);
-        }
+		if (protocol == GREYBUS_PROTOCOL_CAMERA_MGMT) {
+			LOG_INF("Registering Camera greybus driver. id= %d", cport_id);
+			gb_camera_register(cport_id, bundle_id);
+		}
 #endif
 
 #ifdef CONFIG_GREYBUS_AUDIO
-        if (protocol == GREYBUS_PROTOCOL_AUDIO_MGMT) {
-            LOG_INF("Registering Audio MGMT greybus driver.");
-            gb_audio_mgmt_register(cport_id, bundle_id);
-        }
+		if (protocol == GREYBUS_PROTOCOL_AUDIO_MGMT) {
+			LOG_INF("Registering Audio MGMT greybus driver.");
+			gb_audio_mgmt_register(cport_id, bundle_id);
+		}
 
-        if (protocol == GREYBUS_PROTOCOL_AUDIO_DATA) {
-            LOG_INF("Registering Audio DATA greybus driver.");
-            gb_audio_data_register(cport_id, bundle_id);
-        }
+		if (protocol == GREYBUS_PROTOCOL_AUDIO_DATA) {
+			LOG_INF("Registering Audio DATA greybus driver.");
+			gb_audio_data_register(cport_id, bundle_id);
+		}
 #endif
-    }
+	}
 }
 #endif
 
@@ -268,218 +270,219 @@ void enable_cports(void)
  * Returns the number of bytes consumed by the descriptor, or a
  * negative errno.
  */
-static int identify_descriptor(struct greybus_descriptor *desc, size_t size,
-                               int release)
+static int identify_descriptor(struct greybus_descriptor *desc, size_t size, int release)
 {
-    struct greybus_descriptor_header *desc_header = &desc->header;
-    size_t expected_size;
-    size_t desc_size;
-    struct gb_cport *cport;
+	struct greybus_descriptor_header *desc_header = &desc->header;
+	size_t expected_size;
+	size_t desc_size;
+	struct gb_cport *cport;
 
-    if (size < sizeof(*desc_header)) {
-        LOG_ERR("manifest too small");
-        return -EINVAL;         /* Must at least have header */
-    }
+	if (size < sizeof(*desc_header)) {
+		LOG_ERR("manifest too small");
+		return -EINVAL; /* Must at least have header */
+	}
 
-    desc_size = (int)sys_le16_to_cpu(desc_header->size);
-    if ((size_t) desc_size > size) {
-        LOG_ERR("descriptor too big");
-        return -EINVAL;
-    }
+	desc_size = (int)sys_le16_to_cpu(desc_header->size);
+	if ((size_t)desc_size > size) {
+		LOG_ERR("descriptor too big");
+		return -EINVAL;
+	}
 
-    /* Descriptor needs to at least have a header */
-    expected_size = sizeof(*desc_header);
+	/* Descriptor needs to at least have a header */
+	expected_size = sizeof(*desc_header);
 
-    switch (desc_header->type) {
-    case GREYBUS_TYPE_STRING:
-        expected_size += sizeof(struct greybus_descriptor_string);
-        expected_size += desc->string.length;
-        g_greybus.max_string_id = MAX(g_greybus.max_string_id, desc->string.id);
-        /* String descriptors are padded to 4 byte boundaries */
-        expected_size = ALIGN(expected_size);
-        break;
-    case GREYBUS_TYPE_INTERFACE:
-        expected_size += sizeof(struct greybus_descriptor_interface);
-        break;
-    case GREYBUS_TYPE_BUNDLE:
-        expected_size += sizeof(struct greybus_descriptor_bundle);
-        g_greybus.max_bundle_id = MAX(g_greybus.max_bundle_id, desc->bundle.id);
-        break;
-    case GREYBUS_TYPE_CPORT:
-        expected_size += sizeof(struct greybus_descriptor_cport);
-        if (desc_size >= expected_size) {
-            if (!release) {
-                cport = alloc_cport();
-                if (!cport)
-                    return -ENOMEM;
+	switch (desc_header->type) {
+	case GREYBUS_TYPE_STRING:
+		expected_size += sizeof(struct greybus_descriptor_string);
+		expected_size += desc->string.length;
+		g_greybus.max_string_id = MAX(g_greybus.max_string_id, desc->string.id);
+		/* String descriptors are padded to 4 byte boundaries */
+		expected_size = ALIGN(expected_size);
+		break;
+	case GREYBUS_TYPE_INTERFACE:
+		expected_size += sizeof(struct greybus_descriptor_interface);
+		break;
+	case GREYBUS_TYPE_BUNDLE:
+		expected_size += sizeof(struct greybus_descriptor_bundle);
+		g_greybus.max_bundle_id = MAX(g_greybus.max_bundle_id, desc->bundle.id);
+		break;
+	case GREYBUS_TYPE_CPORT:
+		expected_size += sizeof(struct greybus_descriptor_cport);
+		if (desc_size >= expected_size) {
+			if (!release) {
+				cport = alloc_cport();
+				if (!cport) {
+					return -ENOMEM;
+				}
 
-                cport->id = desc->cport.id;
-                cport->bundle = desc->cport.bundle;
-                cport->protocol = desc->cport.protocol_id;
-                LOG_DBG("cport_id = %d", cport->id);
-            } else {
-                free_cport(desc->cport.id);
-            }
-        }
-        break;
-    case GREYBUS_TYPE_PROPERTY:
+				cport->id = desc->cport.id;
+				cport->bundle = desc->cport.bundle;
+				cport->protocol = desc->cport.protocol_id;
+				LOG_DBG("cport_id = %d", cport->id);
+			} else {
+				free_cport(desc->cport.id);
+			}
+		}
+		break;
+	case GREYBUS_TYPE_PROPERTY:
 		expected_size += sizeof(struct greybus_descriptor_property);
 		expected_size += desc->property.length;
-        g_greybus.max_property_id = MAX(g_greybus.max_property_id, desc->property.id);
+		g_greybus.max_property_id = MAX(g_greybus.max_property_id, desc->property.id);
 		expected_size = ALIGN(expected_size);
 		break;
 	case GREYBUS_TYPE_DEVICE:
 		expected_size += sizeof(struct greybus_descriptor_device);
-        g_greybus.max_device_id = MAX(g_greybus.max_device_id, desc->device.id);
+		g_greybus.max_device_id = MAX(g_greybus.max_device_id, desc->device.id);
 		break;
 	case GREYBUS_TYPE_MIKROBUS:
 		expected_size += sizeof(struct greybus_descriptor_mikrobus);
 		break;
-    case GREYBUS_TYPE_INVALID:
-    default:
-        LOG_ERR("invalid descriptor type (%hhu)", desc_header->type);
-        return -EINVAL;
-    }
-    if (desc_size < expected_size) {
-        LOG_ERR("%d: descriptor too small (%zu < %zu)",
-                 desc_header->type, desc_size, expected_size);
-        return -EINVAL;
-    }
+	case GREYBUS_TYPE_INVALID:
+	default:
+		LOG_ERR("invalid descriptor type (%hhu)", desc_header->type);
+		return -EINVAL;
+	}
+	if (desc_size < expected_size) {
+		LOG_ERR("%d: descriptor too small (%zu < %zu)", desc_header->type, desc_size,
+			expected_size);
+		return -EINVAL;
+	}
 
-    /* Descriptor bigger than what we expect */
-    if (desc_size > expected_size) {
-        LOG_ERR("%d descriptor size mismatch (want %zu got %zu)",
-                 desc_header->type, expected_size, desc_size);
-    }
+	/* Descriptor bigger than what we expect */
+	if (desc_size > expected_size) {
+		LOG_ERR("%d descriptor size mismatch (want %zu got %zu)", desc_header->type,
+			expected_size, desc_size);
+	}
 
-    return desc_size;
+	return desc_size;
 }
 
 static int identify_patch_descriptor(struct greybus_descriptor *desc, size_t size)
 {
-    struct greybus_descriptor_header *desc_header = &desc->header;
-    size_t expected_size;
-    size_t desc_size;
-    int skip = 0;
+	struct greybus_descriptor_header *desc_header = &desc->header;
+	size_t expected_size;
+	size_t desc_size;
+	int skip = 0;
 
-    if (size < sizeof(*desc_header)) {
-        LOG_ERR("manifest too small");
-        return -EINVAL;         /* Must at least have header */
-    }
+	if (size < sizeof(*desc_header)) {
+		LOG_ERR("manifest too small");
+		return -EINVAL; /* Must at least have header */
+	}
 
-    desc_size = (int)sys_le16_to_cpu(desc_header->size);
-    if ((size_t) desc_size > size) {
-        LOG_ERR("descriptor too big");
-        return -EINVAL;
-    }
+	desc_size = (int)sys_le16_to_cpu(desc_header->size);
+	if ((size_t)desc_size > size) {
+		LOG_ERR("descriptor too big");
+		return -EINVAL;
+	}
 
-    /* Descriptor needs to at least have a header */
-    expected_size = sizeof(*desc_header);
-    switch (desc_header->type) {
-    case GREYBUS_TYPE_STRING:
-        expected_size += sizeof(struct greybus_descriptor_string);
-        expected_size += desc->string.length;
-        desc->string.id += g_greybus.max_string_id;
-        g_greybus.max_patch_string_id = MAX(g_greybus.max_patch_string_id, desc->string.id);
-        expected_size = ALIGN(expected_size);
-        break;
-    case GREYBUS_TYPE_INTERFACE:
-        expected_size += sizeof(struct greybus_descriptor_interface);
-        skip = 1;
-        break;
-    case GREYBUS_TYPE_BUNDLE:
-        expected_size += sizeof(struct greybus_descriptor_bundle);
-        skip = 1;
-        break;
-    case GREYBUS_TYPE_CPORT:
-        expected_size += sizeof(struct greybus_descriptor_cport);
-        skip = 1;
-        break;
-    case GREYBUS_TYPE_PROPERTY:
+	/* Descriptor needs to at least have a header */
+	expected_size = sizeof(*desc_header);
+	switch (desc_header->type) {
+	case GREYBUS_TYPE_STRING:
+		expected_size += sizeof(struct greybus_descriptor_string);
+		expected_size += desc->string.length;
+		desc->string.id += g_greybus.max_string_id;
+		g_greybus.max_patch_string_id = MAX(g_greybus.max_patch_string_id, desc->string.id);
+		expected_size = ALIGN(expected_size);
+		break;
+	case GREYBUS_TYPE_INTERFACE:
+		expected_size += sizeof(struct greybus_descriptor_interface);
+		skip = 1;
+		break;
+	case GREYBUS_TYPE_BUNDLE:
+		expected_size += sizeof(struct greybus_descriptor_bundle);
+		skip = 1;
+		break;
+	case GREYBUS_TYPE_CPORT:
+		expected_size += sizeof(struct greybus_descriptor_cport);
+		skip = 1;
+		break;
+	case GREYBUS_TYPE_PROPERTY:
 		expected_size += sizeof(struct greybus_descriptor_property);
 		expected_size += desc->property.length;
-        desc->property.id += g_greybus.max_property_id;
-        desc->property.propname_stringid += g_greybus.max_string_id;
-        g_greybus.max_patch_property_id = MAX(g_greybus.max_patch_property_id, desc->property.id);
+		desc->property.id += g_greybus.max_property_id;
+		desc->property.propname_stringid += g_greybus.max_string_id;
+		g_greybus.max_patch_property_id =
+			MAX(g_greybus.max_patch_property_id, desc->property.id);
 		expected_size = ALIGN(expected_size);
 		break;
 	case GREYBUS_TYPE_DEVICE:
 		expected_size += sizeof(struct greybus_descriptor_device);
-        desc->device.id += g_greybus.max_device_id;
-        desc->device.driver_stringid += g_greybus.max_string_id;
-        g_greybus.max_patch_device_id = MAX(g_greybus.max_patch_device_id, desc->device.id);
-    	break;
+		desc->device.id += g_greybus.max_device_id;
+		desc->device.driver_stringid += g_greybus.max_string_id;
+		g_greybus.max_patch_device_id = MAX(g_greybus.max_patch_device_id, desc->device.id);
+		break;
 	case GREYBUS_TYPE_MIKROBUS:
 		expected_size += sizeof(struct greybus_descriptor_mikrobus);
 		break;
-    case GREYBUS_TYPE_INVALID:
-    default:
-        LOG_ERR("invalid descriptor type (%hhu)", desc_header->type);
-        return -EINVAL;
-    }
+	case GREYBUS_TYPE_INVALID:
+	default:
+		LOG_ERR("invalid descriptor type (%hhu)", desc_header->type);
+		return -EINVAL;
+	}
 
-    if (desc_size < expected_size) {
-        LOG_ERR("%d: descriptor too small (%zu < %zu)",
-                 desc_header->type, desc_size, expected_size);
-        return -EINVAL;
-    }
-    /* Descriptor bigger than what we expect */
-    if (desc_size > expected_size) {
-        LOG_ERR("%d descriptor size mismatch (want %zu got %zu)",
-                 desc_header->type, expected_size, desc_size);
-    }
-    if(skip)
-        return -desc_size;
+	if (desc_size < expected_size) {
+		LOG_ERR("%d: descriptor too small (%zu < %zu)", desc_header->type, desc_size,
+			expected_size);
+		return -EINVAL;
+	}
+	/* Descriptor bigger than what we expect */
+	if (desc_size > expected_size) {
+		LOG_ERR("%d descriptor size mismatch (want %zu got %zu)", desc_header->type,
+			expected_size, desc_size);
+	}
+	if (skip) {
+		return -desc_size;
+	}
 
-    return desc_size;
+	return desc_size;
 }
-
 
 static bool _manifest_parse(void *data, size_t size, int release)
 {
-    struct greybus_manifest *manifest = data;
-    struct greybus_manifest_header *header = &manifest->header;
-    struct greybus_descriptor *desc;
-    uint16_t manifest_size;
+	struct greybus_manifest *manifest = data;
+	struct greybus_manifest_header *header = &manifest->header;
+	struct greybus_descriptor *desc;
+	uint16_t manifest_size;
 
-    if (!release) {
-        /* we have to have at _least_ the manifest header */
-        if (size <= sizeof(manifest->header)) {
-            LOG_ERR("short manifest (%zu)", size);
-            return false;
-        }
+	if (!release) {
+		/* we have to have at _least_ the manifest header */
+		if (size <= sizeof(manifest->header)) {
+			LOG_ERR("short manifest (%zu)", size);
+			return false;
+		}
 
-        /* Make sure the size is right */
-        manifest_size = sys_le16_to_cpu(header->size);
-        if (manifest_size != size) {
-            LOG_ERR("manifest size mismatch %zu != %hu", size,
-                     manifest_size);
-            return false;
-        }
+		/* Make sure the size is right */
+		manifest_size = sys_le16_to_cpu(header->size);
+		if (manifest_size != size) {
+			LOG_ERR("manifest size mismatch %zu != %hu", size, manifest_size);
+			return false;
+		}
 
-        /* Validate major/minor number */
-        if (header->version_major > GREYBUS_VERSION_MAJOR) {
-            LOG_ERR("manifest version too new (%hhu.%hhu > %hhu.%hhu)",
-                     header->version_major, header->version_minor,
-                     GREYBUS_VERSION_MAJOR, GREYBUS_VERSION_MINOR);
-            return false;
-        }
-    }
+		/* Validate major/minor number */
+		if (header->version_major > GREYBUS_VERSION_MAJOR) {
+			LOG_ERR("manifest version too new (%hhu.%hhu > %hhu.%hhu)",
+				header->version_major, header->version_minor, GREYBUS_VERSION_MAJOR,
+				GREYBUS_VERSION_MINOR);
+			return false;
+		}
+	}
 
-    /* OK, find all the descriptors */
-    desc = (struct greybus_descriptor *)(header + 1);
-    size -= sizeof(*header);
-    while (size) {
-        int desc_size;
+	/* OK, find all the descriptors */
+	desc = (struct greybus_descriptor *)(header + 1);
+	size -= sizeof(*header);
+	while (size) {
+		int desc_size;
 
-        desc_size = identify_descriptor(desc, size, release);
-        if (desc_size <= 0)
-            return false;
-        desc = (struct greybus_descriptor *)((char *)desc + desc_size);
-        size -= desc_size;
-    }
+		desc_size = identify_descriptor(desc, size, release);
+		if (desc_size <= 0) {
+			return false;
+		}
+		desc = (struct greybus_descriptor *)((char *)desc + desc_size);
+		size -= desc_size;
+	}
 
-    return true;
+	return true;
 }
 
 /*
@@ -499,152 +502,151 @@ static bool _manifest_parse(void *data, size_t size, int release)
  */
 bool manifest_parse(void *data, size_t size)
 {
-    return _manifest_parse(data, size, 0);
+	return _manifest_parse(data, size, 0);
 }
 
 /*
  * patch a buffer containing a interface manifest
  * with a manifest fragment, manifest fragment will have
- * mikrobus, device descriptor information. 
+ * mikrobus, device descriptor information.
  */
 bool manifest_patch(uint8_t **mnfb, void *data, size_t size)
 {
-    struct greybus_manifest *manifest = (struct greybus_manifest *)*mnfb;
-    struct greybus_manifest_header *header = &manifest->header;
-    struct greybus_manifest *manifest_fragment = (struct greybus_manifest *)data;
-    struct greybus_manifest_header *fragment_header = &manifest_fragment->header;
-    struct greybus_descriptor *desc;
-    uint16_t manifest_size = sys_le16_to_cpu(header->size);
-    uint16_t manifest_fragment_size;
-    
-    /* we have to have at _least_ the manifest header */
-    if (size <= sizeof(manifest_fragment->header)) {
-        LOG_ERR("short manifest fragment(%zu)", size);
-        return false;
-    }
+	struct greybus_manifest *manifest = (struct greybus_manifest *)*mnfb;
+	struct greybus_manifest_header *header = &manifest->header;
+	struct greybus_manifest *manifest_fragment = (struct greybus_manifest *)data;
+	struct greybus_manifest_header *fragment_header = &manifest_fragment->header;
+	struct greybus_descriptor *desc;
+	uint16_t manifest_size = sys_le16_to_cpu(header->size);
+	uint16_t manifest_fragment_size;
 
-    /* Make sure the size is right */
-    manifest_fragment_size = sys_le16_to_cpu(fragment_header->size);
-    if (manifest_fragment_size != size) {
-        LOG_ERR("manifest fragment size mismatch %zu != %hu", size,
-                    manifest_fragment_size);
-        return false;
-    }
+	/* we have to have at _least_ the manifest header */
+	if (size <= sizeof(manifest_fragment->header)) {
+		LOG_ERR("short manifest fragment(%zu)", size);
+		return false;
+	}
 
-    /* Validate major/minor number */
-    if (fragment_header->version_major > GREYBUS_VERSION_MAJOR) {
-        LOG_ERR("manifest fragment version too new (%hhu.%hhu > %hhu.%hhu)",
-                    fragment_header->version_major, fragment_header->version_minor,
-                    GREYBUS_VERSION_MAJOR, GREYBUS_VERSION_MINOR);
-        return false;
-    }
-   //LOG_HEXDUMP_ERR(manifest, manifest_size, "original manifest ");
-    g_greybus.max_patch_property_id = 0;
-    g_greybus.max_patch_device_id = 0;
-    g_greybus.max_patch_string_id = 0;
-    /* OK, find all the descriptors */
-    desc = (struct greybus_descriptor *)(fragment_header + 1);
-    size -= sizeof(*fragment_header);
-    while (size) {
-        int desc_size;
-        desc_size = identify_patch_descriptor(desc, size);
-        if (desc_size <= 0){
-            desc_size = -desc_size;
-            desc = (struct greybus_descriptor *)((char *)desc + desc_size);
-            size -= desc_size;
-            continue;
-        }
-        size -= desc_size;
-        *mnfb = realloc(*mnfb, manifest_size + desc_size);
-        memcpy((char *)*mnfb + manifest_size, desc, desc_size);
-        manifest = (struct greybus_manifest *)*mnfb;
-        header = &manifest->header;
-        header->size += desc_size;
-        manifest_size += desc_size;
-        desc = (struct greybus_descriptor *)((char *)desc + desc_size);
-    }
-    g_greybus.max_property_id += g_greybus.max_patch_property_id;
-    g_greybus.max_device_id += g_greybus.max_patch_device_id;
-    g_greybus.max_string_id += g_greybus.max_patch_string_id;
-    return true;
+	/* Make sure the size is right */
+	manifest_fragment_size = sys_le16_to_cpu(fragment_header->size);
+	if (manifest_fragment_size != size) {
+		LOG_ERR("manifest fragment size mismatch %zu != %hu", size, manifest_fragment_size);
+		return false;
+	}
+
+	/* Validate major/minor number */
+	if (fragment_header->version_major > GREYBUS_VERSION_MAJOR) {
+		LOG_ERR("manifest fragment version too new (%hhu.%hhu > %hhu.%hhu)",
+			fragment_header->version_major, fragment_header->version_minor,
+			GREYBUS_VERSION_MAJOR, GREYBUS_VERSION_MINOR);
+		return false;
+	}
+	// LOG_HEXDUMP_ERR(manifest, manifest_size, "original manifest ");
+	g_greybus.max_patch_property_id = 0;
+	g_greybus.max_patch_device_id = 0;
+	g_greybus.max_patch_string_id = 0;
+	/* OK, find all the descriptors */
+	desc = (struct greybus_descriptor *)(fragment_header + 1);
+	size -= sizeof(*fragment_header);
+	while (size) {
+		int desc_size;
+		desc_size = identify_patch_descriptor(desc, size);
+		if (desc_size <= 0) {
+			desc_size = -desc_size;
+			desc = (struct greybus_descriptor *)((char *)desc + desc_size);
+			size -= desc_size;
+			continue;
+		}
+		size -= desc_size;
+		*mnfb = realloc(*mnfb, manifest_size + desc_size);
+		memcpy((char *)*mnfb + manifest_size, desc, desc_size);
+		manifest = (struct greybus_manifest *)*mnfb;
+		header = &manifest->header;
+		header->size += desc_size;
+		manifest_size += desc_size;
+		desc = (struct greybus_descriptor *)((char *)desc + desc_size);
+	}
+	g_greybus.max_property_id += g_greybus.max_patch_property_id;
+	g_greybus.max_device_id += g_greybus.max_patch_device_id;
+	g_greybus.max_string_id += g_greybus.max_patch_string_id;
+	return true;
 }
-
 
 bool manifest_release(void *data, size_t size)
 {
-    return _manifest_parse(data, size, 1);
+	return _manifest_parse(data, size, 1);
 }
 
 static int get_interface_id(char *fname)
 {
-    char *iid_str;
-    int iid = 0;
-    char tmp[256];
+	char *iid_str;
+	int iid = 0;
+	char tmp[256];
 
-    strcpy(tmp, fname);
-    iid_str = strtok(tmp, "-");
-    if (!strncmp(iid_str, "IID", 3))
-        iid = strtol(fname + 4, NULL, 0);
+	strcpy(tmp, fname);
+	iid_str = strtok(tmp, "-");
+	if (!strncmp(iid_str, "IID", 3)) {
+		iid = strtol(fname + 4, NULL, 0);
+	}
 
-    return iid;
+	return iid;
 }
 
 void *get_manifest_blob(void)
 {
-    return bridge_manifest;
+	return bridge_manifest;
 }
 
 void set_manifest_blob(void *blob)
 {
-    bridge_manifest = blob;
+	bridge_manifest = blob;
 }
 
 void parse_manifest_blob(void *manifest)
 {
-    struct greybus_manifest_header *mh = manifest;
+	struct greybus_manifest_header *mh = manifest;
 
-    manifest_parse(mh, sys_le16_to_cpu(mh->size));
+	manifest_parse(mh, sys_le16_to_cpu(mh->size));
 }
 
 void release_manifest_blob(void *manifest)
 {
-    struct greybus_manifest_header *mh = manifest;
+	struct greybus_manifest_header *mh = manifest;
 
-    manifest_release(mh, sys_le16_to_cpu(mh->size));
+	manifest_release(mh, sys_le16_to_cpu(mh->size));
 }
 
 void enable_manifest(char *name, void *manifest, int device_id)
 {
-    if (!manifest) {
-        manifest = get_manifest_blob();
-    }
+	if (!manifest) {
+		manifest = get_manifest_blob();
+	}
 
-    if (manifest) {
-        parse_manifest_blob(manifest);
-        int iid = get_interface_id(name);
-        if (iid > 0) {
-            LOG_INF("%s interface inserted", name);
-        } else {
-            LOG_ERR("invalid interface ID, no hotplug plug event sent");
-        }
-    } else {
-        LOG_ERR("missing manifest blob, no hotplug event sent");
-    }
+	if (manifest) {
+		parse_manifest_blob(manifest);
+		int iid = get_interface_id(name);
+		if (iid > 0) {
+			LOG_INF("%s interface inserted", name);
+		} else {
+			LOG_ERR("invalid interface ID, no hotplug plug event sent");
+		}
+	} else {
+		LOG_ERR("missing manifest blob, no hotplug event sent");
+	}
 }
 
 void disable_manifest(char *name, void *priv, int device_id)
 {
-    void *manifest;
+	void *manifest;
 
-    manifest = get_manifest_blob();
-    if (manifest) {
-        release_manifest_blob(manifest);
-    }
+	manifest = get_manifest_blob();
+	if (manifest) {
+		release_manifest_blob(manifest);
+	}
 }
 
 struct list_head *get_manifest_cports(void)
 {
-    return &g_greybus.cports;
+	return &g_greybus.cports;
 }
 
 size_t manifest_get_num_cports(void)
@@ -652,7 +654,8 @@ size_t manifest_get_num_cports(void)
 	size_t r = 0;
 	struct list_head *iter;
 
-	list_foreach(&g_greybus.cports, iter) {
+	list_foreach(&g_greybus.cports, iter)
+	{
 		r++;
 	}
 
@@ -665,10 +668,12 @@ size_t manifest_get_num_cports_bundle(int bundle_id)
 	struct list_head *iter;
 	size_t r = 0;
 
-	list_foreach(&g_greybus.cports, iter) {
-        gb_cport = list_entry(iter, struct gb_cport, list);
-		if(gb_cport->bundle == bundle_id)
-            		r++;
+	list_foreach(&g_greybus.cports, iter)
+	{
+		gb_cport = list_entry(iter, struct gb_cport, list);
+		if (gb_cport->bundle == bundle_id) {
+			r++;
+		}
 	}
 
 	return r;
@@ -680,10 +685,12 @@ unsigned int manifest_get_start_cport_bundle(int bundle_id)
 	struct list_head *iter;
 	unsigned int cport_id = UINT_MAX;
 
-	list_foreach(&g_greybus.cports, iter) {
-        gb_cport = list_entry(iter, struct gb_cport, list);
-		if(gb_cport->bundle == bundle_id && gb_cport->id < cport_id)
-            cport_id = gb_cport->id;
+	list_foreach(&g_greybus.cports, iter)
+	{
+		gb_cport = list_entry(iter, struct gb_cport, list);
+		if (gb_cport->bundle == bundle_id && gb_cport->id < cport_id) {
+			cport_id = gb_cport->id;
+		}
 	}
 
 	return cport_id;
@@ -691,12 +698,12 @@ unsigned int manifest_get_start_cport_bundle(int bundle_id)
 
 int get_manifest_size(void)
 {
-    struct greybus_manifest_header *mh = get_manifest_blob();
+	struct greybus_manifest_header *mh = get_manifest_blob();
 
-    return mh ? sys_le16_to_cpu(mh->size) : 0;
+	return mh ? sys_le16_to_cpu(mh->size) : 0;
 }
 
 size_t manifest_get_max_bundle_id(void)
 {
-    return g_greybus.max_bundle_id;
+	return g_greybus.max_bundle_id;
 }

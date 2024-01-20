@@ -44,112 +44,109 @@ static struct device *usbdev;
 
 static uint8_t gb_usb_protocol_version(struct gb_operation *operation)
 {
-    struct gb_usb_proto_version_response *response;
+	struct gb_usb_proto_version_response *response;
 
-    response = gb_operation_alloc_response(operation, sizeof(*response));
-    if (!response) {
-        return GB_OP_NO_MEMORY;
-    }
+	response = gb_operation_alloc_response(operation, sizeof(*response));
+	if (!response) {
+		return GB_OP_NO_MEMORY;
+	}
 
-    response->major = GB_USB_VERSION_MAJOR;
-    response->minor = GB_USB_VERSION_MINOR;
-    return GB_OP_SUCCESS;
+	response->major = GB_USB_VERSION_MAJOR;
+	response->minor = GB_USB_VERSION_MINOR;
+	return GB_OP_SUCCESS;
 }
 
 static uint8_t gb_usb_hcd_stop(struct gb_operation *operation)
 {
-    LOG_DBG("%s()", __func__);
+	LOG_DBG("%s()", __func__);
 
-    device_usb_hcd_stop(usbdev);
+	device_usb_hcd_stop(usbdev);
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 static uint8_t gb_usb_hcd_start(struct gb_operation *operation)
 {
-    int retval;
+	int retval;
 
-    LOG_DBG("%s()", __func__);
+	LOG_DBG("%s()", __func__);
 
-    retval = device_usb_hcd_start(usbdev);
-    if (retval) {
-        return GB_OP_UNKNOWN_ERROR;
-    }
+	retval = device_usb_hcd_start(usbdev);
+	if (retval) {
+		return GB_OP_UNKNOWN_ERROR;
+	}
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 static uint8_t gb_usb_hub_control(struct gb_operation *operation)
 {
-    struct gb_usb_hub_control_response *response;
-    struct gb_usb_hub_control_request *request =
-        gb_operation_get_request_payload(operation);
-    uint16_t typeReq;
-    uint16_t wValue;
-    uint16_t wIndex;
-    uint16_t wLength;
-    int status;
+	struct gb_usb_hub_control_response *response;
+	struct gb_usb_hub_control_request *request = gb_operation_get_request_payload(operation);
+	uint16_t typeReq;
+	uint16_t wValue;
+	uint16_t wIndex;
+	uint16_t wLength;
+	int status;
 
-    if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
-        return GB_OP_INVALID;
-    }
+	if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
+		return GB_OP_INVALID;
+	}
 
-    typeReq = sys_le16_to_cpu(request->typeReq);
-    wValue = sys_le16_to_cpu(request->wValue);
-    wIndex = sys_le16_to_cpu(request->wIndex);
-    wLength = sys_le16_to_cpu(request->wLength);
+	typeReq = sys_le16_to_cpu(request->typeReq);
+	wValue = sys_le16_to_cpu(request->wValue);
+	wIndex = sys_le16_to_cpu(request->wIndex);
+	wLength = sys_le16_to_cpu(request->wLength);
 
-    response =
-        gb_operation_alloc_response(operation, sizeof(*response) + wLength);
-    if (!response) {
-        return GB_OP_NO_MEMORY;
-    }
+	response = gb_operation_alloc_response(operation, sizeof(*response) + wLength);
+	if (!response) {
+		return GB_OP_NO_MEMORY;
+	}
 
-    LOG_DBG("%s(%hX, %hX, %hX, %hX)", __func__, typeReq, wValue, wIndex,
-                 wLength);
+	LOG_DBG("%s(%hX, %hX, %hX, %hX)", __func__, typeReq, wValue, wIndex, wLength);
 
-    status = device_usb_hcd_hub_control(usbdev, typeReq, wValue,  wIndex,
-                                        (char*) response->buf, wLength);
-    if (status) {
-        return GB_OP_UNKNOWN_ERROR;
-    }
+	status = device_usb_hcd_hub_control(usbdev, typeReq, wValue, wIndex, (char *)response->buf,
+					    wLength);
+	if (status) {
+		return GB_OP_UNKNOWN_ERROR;
+	}
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 static int gb_usb_init(unsigned int cport, struct gb_bundle *bundle)
 {
-    usbdev = device_open(DEVICE_TYPE_USB_HCD, 0);
-    if (!usbdev) {
-        return -ENODEV;
-    }
+	usbdev = device_open(DEVICE_TYPE_USB_HCD, 0);
+	if (!usbdev) {
+		return -ENODEV;
+	}
 
-    return 0;
+	return 0;
 }
 
 static void gb_usb_exit(unsigned int cport, struct gb_bundle *bundle)
 {
-    if (usbdev) {
-        device_close(usbdev);
-    }
+	if (usbdev) {
+		device_close(usbdev);
+	}
 }
 
 static struct gb_operation_handler gb_usb_handlers[] = {
-    GB_HANDLER(GB_USB_TYPE_PROTOCOL_VERSION, gb_usb_protocol_version),
-    GB_HANDLER(GB_USB_TYPE_HCD_STOP, gb_usb_hcd_stop),
-    GB_HANDLER(GB_USB_TYPE_HCD_START, gb_usb_hcd_start),
-    GB_HANDLER(GB_USB_TYPE_HUB_CONTROL, gb_usb_hub_control),
+	GB_HANDLER(GB_USB_TYPE_PROTOCOL_VERSION, gb_usb_protocol_version),
+	GB_HANDLER(GB_USB_TYPE_HCD_STOP, gb_usb_hcd_stop),
+	GB_HANDLER(GB_USB_TYPE_HCD_START, gb_usb_hcd_start),
+	GB_HANDLER(GB_USB_TYPE_HUB_CONTROL, gb_usb_hub_control),
 };
 
 struct gb_driver usb_driver = {
-    .op_handlers = (struct gb_operation_handler*) gb_usb_handlers,
-    .op_handlers_count = ARRAY_SIZE(gb_usb_handlers),
+	.op_handlers = (struct gb_operation_handler *)gb_usb_handlers,
+	.op_handlers_count = ARRAY_SIZE(gb_usb_handlers),
 
-    .init = gb_usb_init,
-    .exit = gb_usb_exit,
+	.init = gb_usb_init,
+	.exit = gb_usb_exit,
 };
 
 void gb_usb_register(int cport, int bundle)
 {
-    gb_register_driver(cport, bundle, &usb_driver);
+	gb_register_driver(cport, bundle, &usb_driver);
 }

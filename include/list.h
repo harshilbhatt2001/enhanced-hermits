@@ -19,16 +19,19 @@ struct list_head {
 	struct list_head *next;
 };
 
-static inline void list_init(struct list_head *head) {
+static inline void list_init(struct list_head *head)
+{
 	head->prev = head;
 	head->next = head;
 }
 
-static inline bool list_is_empty(struct list_head *head) {
+static inline bool list_is_empty(struct list_head *head)
+{
 	return head->prev == head && head->next == head;
 }
 
-static inline void list_del(struct list_head *iter) {
+static inline void list_del(struct list_head *iter)
+{
 
 	struct list_head *prev;
 	struct list_head *next;
@@ -51,7 +54,8 @@ static inline void list_del(struct list_head *iter) {
 	iter->prev = iter;
 }
 
-static inline void list_add(struct list_head *head, struct list_head *iter) {
+static inline void list_add(struct list_head *head, struct list_head *iter)
+{
 	struct list_head *tail;
 
 	if (NULL == head || NULL == iter) {
@@ -77,16 +81,19 @@ static inline void list_add(struct list_head *head, struct list_head *iter) {
 	iter->next = head;
 }
 
-#define list_foreach(head, iter) \
-	for(iter = (head)->next; iter != head; iter = (iter)->next)
+#define list_foreach(head, iter) for (iter = (head)->next; iter != head; iter = (iter)->next)
 
-#define list_foreach_safe(head, iter, iter_next) \
-	for(iter = (head)->next, iter_next = iter->next; iter != head; iter = iter_next, iter_next = iter->next)
+#define list_foreach_safe(head, iter, iter_next)                                                   \
+	for (iter = (head)->next, iter_next = iter->next; iter != head;                            \
+	     iter = iter_next, iter_next = iter->next)
 
 #define list_entry(iter, container, member) CONTAINER_OF(iter, container, member)
 
 #define LIST_DECLARE(name) struct list_head name
-#define LIST_INIT(head) { .prev = &(head), .next = &(head) }
+#define LIST_INIT(head)                                                                            \
+	{                                                                                          \
+		.prev = &(head), .next = &(head)                                                   \
+	}
 
 #if defined(__cplusplus)
 }

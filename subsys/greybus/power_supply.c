@@ -50,8 +50,8 @@ LOG_MODULE_REGISTER(greybus_power, CONFIG_GREYBUS_LOG_LEVEL);
  * Power supply protocol private information.
  */
 struct gb_power_supply_info {
-    /** CPort from greybus */
-    unsigned int cport;
+	/** CPort from greybus */
+	unsigned int cport;
 };
 
 /**
@@ -64,27 +64,26 @@ struct gb_power_supply_info {
  */
 static int event_callback(void *data, uint8_t psy_id, uint8_t event)
 {
-    struct gb_operation *operation;
-    struct gb_power_supply_event_request *request;
-    struct gb_power_supply_info *info;
+	struct gb_operation *operation;
+	struct gb_power_supply_event_request *request;
+	struct gb_power_supply_info *info;
 
-    DEBUGASSERT(data);
-    info = data;
+	DEBUGASSERT(data);
+	info = data;
 
-    operation = gb_operation_create(info->cport, GB_POWER_SUPPLY_TYPE_EVENT,
-                                    sizeof(*request));
-    if (!operation) {
-        return -ENOMEM;
-    }
+	operation = gb_operation_create(info->cport, GB_POWER_SUPPLY_TYPE_EVENT, sizeof(*request));
+	if (!operation) {
+		return -ENOMEM;
+	}
 
-    request = gb_operation_get_request_payload(operation);
-    request->psy_id = psy_id;
-    request->event = event;
+	request = gb_operation_get_request_payload(operation);
+	request->psy_id = psy_id;
+	request->event = event;
 
-    gb_operation_send_request_nowait(operation, NULL, false);
-    gb_operation_destroy(operation);
+	gb_operation_send_request_nowait(operation, NULL, false);
+	gb_operation_destroy(operation);
 
-    return 0;
+	return 0;
 }
 
 /**
@@ -98,17 +97,17 @@ static int event_callback(void *data, uint8_t psy_id, uint8_t event)
  */
 static uint8_t gb_power_supply_version(struct gb_operation *operation)
 {
-    struct gb_power_supply_version_response *response;
+	struct gb_power_supply_version_response *response;
 
-    response = gb_operation_alloc_response(operation, sizeof(*response));
-    if (!response) {
-        return GB_OP_NO_MEMORY;
-    }
+	response = gb_operation_alloc_response(operation, sizeof(*response));
+	if (!response) {
+		return GB_OP_NO_MEMORY;
+	}
 
-    response->major = GB_POWER_SUPPLY_VERSION_MAJOR;
-    response->minor = GB_POWER_SUPPLY_VERSION_MINOR;
+	response->major = GB_POWER_SUPPLY_VERSION_MAJOR;
+	response->minor = GB_POWER_SUPPLY_VERSION_MINOR;
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 /**
@@ -122,24 +121,24 @@ static uint8_t gb_power_supply_version(struct gb_operation *operation)
  */
 static uint8_t gb_power_supply_get_supplies(struct gb_operation *operation)
 {
-    struct gb_power_supply_get_supplies_response *response;
-    struct gb_bundle *bundle;
-    int ret = 0;
-    uint8_t supplies_count = 0;
+	struct gb_power_supply_get_supplies_response *response;
+	struct gb_bundle *bundle;
+	int ret = 0;
+	uint8_t supplies_count = 0;
 
-    bundle = gb_operation_get_bundle(operation);
-    DEBUGASSERT(bundle);
+	bundle = gb_operation_get_bundle(operation);
+	DEBUGASSERT(bundle);
 
-    response = gb_operation_alloc_response(operation, sizeof(*response));
-    if (!response) {
-        return GB_OP_NO_MEMORY;
-    }
+	response = gb_operation_alloc_response(operation, sizeof(*response));
+	if (!response) {
+		return GB_OP_NO_MEMORY;
+	}
 
-    ret = device_power_supply_get_supplies(bundle->dev, &supplies_count);
+	ret = device_power_supply_get_supplies(bundle->dev, &supplies_count);
 
-    response->supplies_count = supplies_count;
+	response->supplies_count = supplies_count;
 
-    return gb_errno_to_op_result(ret);
+	return gb_errno_to_op_result(ret);
 }
 
 /**
@@ -153,40 +152,39 @@ static uint8_t gb_power_supply_get_supplies(struct gb_operation *operation)
  */
 static uint8_t gb_power_supply_get_description(struct gb_operation *operation)
 {
-    struct gb_power_supply_get_description_request *request;
-    struct gb_power_supply_get_description_response *response;
-    struct gb_bundle *bundle;
-    struct power_supply_description description;
-    int ret = 0;
+	struct gb_power_supply_get_description_request *request;
+	struct gb_power_supply_get_description_response *response;
+	struct gb_bundle *bundle;
+	struct power_supply_description description;
+	int ret = 0;
 
-    bundle = gb_operation_get_bundle(operation);
-    DEBUGASSERT(bundle);
+	bundle = gb_operation_get_bundle(operation);
+	DEBUGASSERT(bundle);
 
-    request = gb_operation_get_request_payload(operation);
+	request = gb_operation_get_request_payload(operation);
 
-    if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
-        LOG_ERR("dropping short message");
-        return GB_OP_INVALID;
-    }
+	if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
+		LOG_ERR("dropping short message");
+		return GB_OP_INVALID;
+	}
 
-    ret = device_power_supply_get_description(bundle->dev,
-                                              request->psy_id, &description);
-    if (ret) {
-        return gb_errno_to_op_result(ret);
-    }
+	ret = device_power_supply_get_description(bundle->dev, request->psy_id, &description);
+	if (ret) {
+		return gb_errno_to_op_result(ret);
+	}
 
-    response = gb_operation_alloc_response(operation, sizeof(*response));
-    if (!response) {
-        return GB_OP_NO_MEMORY;
-    }
+	response = gb_operation_alloc_response(operation, sizeof(*response));
+	if (!response) {
+		return GB_OP_NO_MEMORY;
+	}
 
-    memcpy(response->manufacturer, description.manufacturer, DESC_LEN);
-    memcpy(response->model, description.model, DESC_LEN);
-    memcpy(response->serial_number, description.serial_number, DESC_LEN);
-    response->type = sys_cpu_to_le16(description.type);
-    response->properties_count = description.properties_count;
+	memcpy(response->manufacturer, description.manufacturer, DESC_LEN);
+	memcpy(response->model, description.model, DESC_LEN);
+	memcpy(response->serial_number, description.serial_number, DESC_LEN);
+	response->type = sys_cpu_to_le16(description.type);
+	response->properties_count = description.properties_count;
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 /**
@@ -199,60 +197,58 @@ static uint8_t gb_power_supply_get_description(struct gb_operation *operation)
  * @param operation - pointer to structure of Greybus operation message
  * @return GB_OP_SUCCESS on success, error code on failure.
  */
-static uint8_t gb_power_supply_get_prop_descriptors(struct gb_operation *
-                                                                     operation)
+static uint8_t gb_power_supply_get_prop_descriptors(struct gb_operation *operation)
 {
-    struct gb_power_supply_get_property_descriptors_request *request;
-    struct gb_power_supply_get_property_descriptors_response *response;
-    struct gb_bundle *bundle;
-    struct power_supply_props_desc *descriptors;
-    int i = 0, ret = 0;
-    uint8_t properties_count = 0;
+	struct gb_power_supply_get_property_descriptors_request *request;
+	struct gb_power_supply_get_property_descriptors_response *response;
+	struct gb_bundle *bundle;
+	struct power_supply_props_desc *descriptors;
+	int i = 0, ret = 0;
+	uint8_t properties_count = 0;
 
-    bundle = gb_operation_get_bundle(operation);
-    DEBUGASSERT(bundle);
+	bundle = gb_operation_get_bundle(operation);
+	DEBUGASSERT(bundle);
 
-    request = gb_operation_get_request_payload(operation);
+	request = gb_operation_get_request_payload(operation);
 
-    if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
-        LOG_ERR("dropping short message");
-        return GB_OP_INVALID;
-    }
+	if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
+		LOG_ERR("dropping short message");
+		return GB_OP_INVALID;
+	}
 
-    ret = device_power_supply_get_properties_count(bundle->dev, request->psy_id,
-                                                   &properties_count);
-    if (ret) {
-        return gb_errno_to_op_result(ret);
-    }
+	ret = device_power_supply_get_properties_count(bundle->dev, request->psy_id,
+						       &properties_count);
+	if (ret) {
+		return gb_errno_to_op_result(ret);
+	}
 
-    descriptors = malloc(properties_count * sizeof(*descriptors));
-    if (!descriptors) {
-        return GB_OP_NO_MEMORY;
-    }
+	descriptors = malloc(properties_count * sizeof(*descriptors));
+	if (!descriptors) {
+		return GB_OP_NO_MEMORY;
+	}
 
-    ret = device_power_supply_get_prop_descriptors(bundle->dev, request->psy_id,
-                                                   descriptors);
-    if (ret) {
-        free(descriptors);
-        return gb_errno_to_op_result(ret);
-    }
+	ret = device_power_supply_get_prop_descriptors(bundle->dev, request->psy_id, descriptors);
+	if (ret) {
+		free(descriptors);
+		return gb_errno_to_op_result(ret);
+	}
 
-    response = gb_operation_alloc_response(operation,
-                  sizeof(*response) + properties_count * sizeof(*descriptors));
-    if (!response) {
-        free(descriptors);
-        return GB_OP_NO_MEMORY;
-    }
+	response = gb_operation_alloc_response(
+		operation, sizeof(*response) + properties_count * sizeof(*descriptors));
+	if (!response) {
+		free(descriptors);
+		return GB_OP_NO_MEMORY;
+	}
 
-    response->properties_count = properties_count;
-    for (i = 0; i < properties_count; i++) {
-        response->props[i].property = descriptors[i].property;
-        response->props[i].is_writeable = descriptors[i].is_writeable;
-    }
+	response->properties_count = properties_count;
+	for (i = 0; i < properties_count; i++) {
+		response->props[i].property = descriptors[i].property;
+		response->props[i].is_writeable = descriptors[i].is_writeable;
+	}
 
-    free(descriptors);
+	free(descriptors);
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 /**
@@ -266,38 +262,37 @@ static uint8_t gb_power_supply_get_prop_descriptors(struct gb_operation *
  */
 static uint8_t gb_power_supply_get_property(struct gb_operation *operation)
 {
-    struct gb_power_supply_get_property_request *request;
-    struct gb_power_supply_get_property_response *response;
-    struct gb_bundle *bundle;
-    int ret = 0;
-    uint32_t prop_val = 0;
-    uint8_t property = 0;
+	struct gb_power_supply_get_property_request *request;
+	struct gb_power_supply_get_property_response *response;
+	struct gb_bundle *bundle;
+	int ret = 0;
+	uint32_t prop_val = 0;
+	uint8_t property = 0;
 
-    bundle = gb_operation_get_bundle(operation);
-    DEBUGASSERT(bundle);
+	bundle = gb_operation_get_bundle(operation);
+	DEBUGASSERT(bundle);
 
-    request = gb_operation_get_request_payload(operation);
+	request = gb_operation_get_request_payload(operation);
 
-    if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
-        LOG_ERR("dropping short message");
-        return GB_OP_INVALID;
-    }
+	if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
+		LOG_ERR("dropping short message");
+		return GB_OP_INVALID;
+	}
 
-    property = request->property;
-    ret = device_power_supply_get_property(bundle->dev, request->psy_id,
-                                           property, &prop_val);
-    if (ret) {
-        return gb_errno_to_op_result(ret);
-    }
+	property = request->property;
+	ret = device_power_supply_get_property(bundle->dev, request->psy_id, property, &prop_val);
+	if (ret) {
+		return gb_errno_to_op_result(ret);
+	}
 
-    response = gb_operation_alloc_response(operation, sizeof(*response));
-    if (!response) {
-        return GB_OP_NO_MEMORY;
-    }
+	response = gb_operation_alloc_response(operation, sizeof(*response));
+	if (!response) {
+		return GB_OP_NO_MEMORY;
+	}
 
-    response->prop_val = sys_cpu_to_le32(prop_val);
+	response->prop_val = sys_cpu_to_le32(prop_val);
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 /**
@@ -312,31 +307,30 @@ static uint8_t gb_power_supply_get_property(struct gb_operation *operation)
  */
 static uint8_t gb_power_supply_set_property(struct gb_operation *operation)
 {
-    struct gb_power_supply_set_property_request *request;
-    struct gb_bundle *bundle;
-    int ret = 0;
-    uint32_t prop_val = 0;
-    uint8_t property = 0;
+	struct gb_power_supply_set_property_request *request;
+	struct gb_bundle *bundle;
+	int ret = 0;
+	uint32_t prop_val = 0;
+	uint8_t property = 0;
 
-    bundle = gb_operation_get_bundle(operation);
-    DEBUGASSERT(bundle);
+	bundle = gb_operation_get_bundle(operation);
+	DEBUGASSERT(bundle);
 
-    request = gb_operation_get_request_payload(operation);
+	request = gb_operation_get_request_payload(operation);
 
-    if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
-        LOG_ERR("dropping short message");
-        return GB_OP_INVALID;
-    }
+	if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
+		LOG_ERR("dropping short message");
+		return GB_OP_INVALID;
+	}
 
-    property = request->property;
-    prop_val = sys_le32_to_cpu(request->prop_val);
-    ret = device_power_supply_set_property(bundle->dev, request->psy_id,
-                                           property, prop_val);
-    if (ret) {
-        return gb_errno_to_op_result(ret);
-    }
+	property = request->property;
+	prop_val = sys_le32_to_cpu(request->prop_val);
+	ret = device_power_supply_set_property(bundle->dev, request->psy_id, property, prop_val);
+	if (ret) {
+		return gb_errno_to_op_result(ret);
+	}
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 /**
@@ -351,39 +345,38 @@ static uint8_t gb_power_supply_set_property(struct gb_operation *operation)
  */
 static int gb_power_supply_init(unsigned int cport, struct gb_bundle *bundle)
 {
-    struct gb_power_supply_info *info;
-    int ret;
+	struct gb_power_supply_info *info;
+	int ret;
 
-    DEBUGASSERT(bundle);
+	DEBUGASSERT(bundle);
 
-    info = zalloc(sizeof(*info));
-    if (info == NULL) {
-        return -ENOMEM;
-    }
+	info = zalloc(sizeof(*info));
+	if (info == NULL) {
+		return -ENOMEM;
+	}
 
-    info->cport = cport;
+	info->cport = cport;
 
-    bundle->dev = device_open(DEVICE_TYPE_POWER_SUPPLY_DEVICE, 0);
-    if (!bundle->dev) {
-        ret = -ENODEV;
-        goto err_free_info;
-    }
+	bundle->dev = device_open(DEVICE_TYPE_POWER_SUPPLY_DEVICE, 0);
+	if (!bundle->dev) {
+		ret = -ENODEV;
+		goto err_free_info;
+	}
 
-    ret = device_power_supply_attach_callback(bundle->dev, event_callback,
-                                              info);
-    if (ret) {
-        goto err_close_device;
-    }
+	ret = device_power_supply_attach_callback(bundle->dev, event_callback, info);
+	if (ret) {
+		goto err_close_device;
+	}
 
-    return 0;
+	return 0;
 
 err_close_device:
-    device_close(bundle->dev);
+	device_close(bundle->dev);
 
 err_free_info:
-    free(info);
+	free(info);
 
-    return ret;
+	return ret;
 }
 
 /**
@@ -397,43 +390,38 @@ err_free_info:
  */
 static void gb_power_supply_exit(unsigned int cport, struct gb_bundle *bundle)
 {
-    struct gb_power_supply_info *info;
+	struct gb_power_supply_info *info;
 
-    DEBUGASSERT(bundle);
-    info = bundle->priv;
+	DEBUGASSERT(bundle);
+	info = bundle->priv;
 
-    DEBUGASSERT(cport == info->cport);
+	DEBUGASSERT(cport == info->cport);
 
-    device_power_supply_attach_callback(bundle->dev, NULL, NULL);
+	device_power_supply_attach_callback(bundle->dev, NULL, NULL);
 
-    device_close(bundle->dev);
+	device_close(bundle->dev);
 
-    free(info);
-    info = NULL;
+	free(info);
+	info = NULL;
 }
 
 /**
  * @brief Greybus power supply protocol operation handler
  */
 static struct gb_operation_handler gb_power_supply_handlers[] = {
-    GB_HANDLER(GB_POWER_SUPPLY_TYPE_VERSION, gb_power_supply_version),
-    GB_HANDLER(GB_POWER_SUPPLY_TYPE_GET_SUPPLIES,
-               gb_power_supply_get_supplies),
-    GB_HANDLER(GB_POWER_SUPPLY_TYPE_GET_DESCRIPTION,
-               gb_power_supply_get_description),
-    GB_HANDLER(GB_POWER_SUPPLY_TYPE_GET_PROP_DESCRIPTORS,
-               gb_power_supply_get_prop_descriptors),
-    GB_HANDLER(GB_POWER_SUPPLY_TYPE_GET_PROPERTY,
-               gb_power_supply_get_property),
-    GB_HANDLER(GB_POWER_SUPPLY_TYPE_SET_PROPERTY,
-               gb_power_supply_set_property),
+	GB_HANDLER(GB_POWER_SUPPLY_TYPE_VERSION, gb_power_supply_version),
+	GB_HANDLER(GB_POWER_SUPPLY_TYPE_GET_SUPPLIES, gb_power_supply_get_supplies),
+	GB_HANDLER(GB_POWER_SUPPLY_TYPE_GET_DESCRIPTION, gb_power_supply_get_description),
+	GB_HANDLER(GB_POWER_SUPPLY_TYPE_GET_PROP_DESCRIPTORS, gb_power_supply_get_prop_descriptors),
+	GB_HANDLER(GB_POWER_SUPPLY_TYPE_GET_PROPERTY, gb_power_supply_get_property),
+	GB_HANDLER(GB_POWER_SUPPLY_TYPE_SET_PROPERTY, gb_power_supply_set_property),
 };
 
 static struct gb_driver gb_power_supply_driver = {
-    .init              = gb_power_supply_init,
-    .exit              = gb_power_supply_exit,
-    .op_handlers       = gb_power_supply_handlers,
-    .op_handlers_count = ARRAY_SIZE(gb_power_supply_handlers),
+	.init = gb_power_supply_init,
+	.exit = gb_power_supply_exit,
+	.op_handlers = gb_power_supply_handlers,
+	.op_handlers_count = ARRAY_SIZE(gb_power_supply_handlers),
 };
 
 /**
@@ -443,5 +431,5 @@ static struct gb_driver gb_power_supply_driver = {
  */
 void gb_power_supply_register(int cport, int bundle)
 {
-    gb_register_driver(cport, bundle, &gb_power_supply_driver);
+	gb_register_driver(cport, bundle, &gb_power_supply_driver);
 }

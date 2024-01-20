@@ -34,25 +34,23 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#define CPORT_BUF_SIZE              (2048)
+#define CPORT_BUF_SIZE (2048)
 
-#define INFINITE_MAX_INFLIGHT_BUFCOUNT      0
+#define INFINITE_MAX_INFLIGHT_BUFCOUNT 0
 
 enum unipro_event {
-    UNIPRO_EVT_MAILBOX,
-    UNIPRO_EVT_LUP_DONE,
+	UNIPRO_EVT_MAILBOX,
+	UNIPRO_EVT_LUP_DONE,
 };
 
-typedef int (*unipro_send_completion_t)(int status, const void *buf,
-                                        void *priv);
+typedef int (*unipro_send_completion_t)(int status, const void *buf, void *priv);
 typedef void (*cport_reset_completion_cb_t)(unsigned int cportid, void *data);
 typedef void (*unipro_event_handler_t)(enum unipro_event evt);
 
 struct unipro_driver {
-    const char name[32];
-    int (*rx_handler)(unsigned int cportid,  // Called in irq context
-                      void *data,
-                      size_t len);
+	const char name[32];
+	int (*rx_handler)(unsigned int cportid, // Called in irq context
+			  void *data, size_t len);
 };
 
 unsigned int unipro_cport_count(void);
@@ -63,12 +61,10 @@ void unipro_set_event_handler(unipro_event_handler_t evt_handler);
 void unipro_info(void);
 int unipro_send(unsigned int cportid, const void *buf, size_t len);
 int unipro_send_async(unsigned int cportid, const void *buf, size_t len,
-                      unipro_send_completion_t callback, void *priv);
-int unipro_reset_cport(unsigned int cportid, cport_reset_completion_cb_t cb,
-                       void *priv);
+		      unipro_send_completion_t callback, void *priv);
+int unipro_reset_cport(unsigned int cportid, cport_reset_completion_cb_t cb, void *priv);
 
-int unipro_set_max_inflight_rxbuf_count(unsigned int cportid,
-                                        size_t max_inflight_buf);
+int unipro_set_max_inflight_rxbuf_count(unsigned int cportid, size_t max_inflight_buf);
 void *unipro_rxbuf_alloc(unsigned int cportid);
 void unipro_rxbuf_free(unsigned int cportid, void *ptr);
 
@@ -79,36 +75,43 @@ void unipro_rxbuf_free(unsigned int cportid, void *ptr);
 /*
  * "Don't care" selector index
  */
-#define UNIPRO_SELINDEX_NULL 0  // FIXME: put this back to 0xffff when we're
-                                // out of demo land.
-                                //
-                                // It's causing SW-2431, apparently by
-                                // exposing a bug elsewhere in the SVC
-                                // usage of DME attributes.
+#define UNIPRO_SELINDEX_NULL                                                                       \
+	0 // FIXME: put this back to 0xffff when we're
+	  // out of demo land.
+	  //
+	  // It's causing SW-2431, apparently by
+	  // exposing a bug elsewhere in the SVC
+	  // usage of DME attributes.
 
 /*
  * Result codes for UniPro DME accesses
  */
-#define UNIPRO_CONFIGRESULT_SUCCESS           0 /* Access successful */
-#define UNIPRO_CONFIGRESULT_INVALID_ATTR      1 /* Attribute is invalid,
-                                                 * unimplemented, or
-                                                 * STATIC and doesn't support
-                                                 * setting. */
-#define UNIPRO_CONFIGRESULT_INVALID_ATTR_VAL  2 /* Attribute is settable,
-                                                 * but invalid value was
-                                                 * written. */
-#define UNIPRO_CONFIGRESULT_READ_ONLY_ATTR    3 /* Attribute is read-only. */
-#define UNIPRO_CONFIGRESULT_WRITE_ONLY_ATTR   4 /* Attribute is write-only. */
-#define UNIPRO_CONFIGRESULT_BAD_INDEX         5 /* CPort in selector index
-                                                 * is out of range. */
-#define UNIPRO_CONFIGRESULT_LOCKED_ATTR       6 /* CPort attribute is settable,
-                                                 * but CPort is connected. */
-#define UNIPRO_CONFIGRESULT_BAD_TEST_FEATURE  7 /* Test feature selector index
-                                                 * is out of range. */
+#define UNIPRO_CONFIGRESULT_SUCCESS 0 /* Access successful */
+#define UNIPRO_CONFIGRESULT_INVALID_ATTR                                                           \
+	1 /* Attribute is invalid,                                                                 \
+	   * unimplemented, or                                                                     \
+	   * STATIC and doesn't support                                                            \
+	   * setting. */
+#define UNIPRO_CONFIGRESULT_INVALID_ATTR_VAL                                                       \
+	2                                     /* Attribute is settable,                            \
+					       * but invalid value was                             \
+					       * written. */
+#define UNIPRO_CONFIGRESULT_READ_ONLY_ATTR  3 /* Attribute is read-only. */
+#define UNIPRO_CONFIGRESULT_WRITE_ONLY_ATTR 4 /* Attribute is write-only. */
+#define UNIPRO_CONFIGRESULT_BAD_INDEX                                                              \
+	5 /* CPort in selector index                                                               \
+	   * is out of range. */
+#define UNIPRO_CONFIGRESULT_LOCKED_ATTR                                                            \
+	6 /* CPort attribute is settable,                                                          \
+	   * but CPort is connected. */
+#define UNIPRO_CONFIGRESULT_BAD_TEST_FEATURE                                                       \
+	7                                       /* Test feature selector index                     \
+						 * is out of range. */
 #define UNIPRO_CONFIGRESULT_PEER_COMM_FAILURE 8 /* Peer I/O error. */
-#define UNIPRO_CONFIGRESULT_BUSY              9 /* Previous attr operation
-                                                 * hasn't been completed. */
-#define UNIPRO_CONFIGRESULT_DME_FAILURE       10 /* Layer addressed by DME */
+#define UNIPRO_CONFIGRESULT_BUSY                                                                   \
+	9                                  /* Previous attr operation                              \
+					    * hasn't been completed. */
+#define UNIPRO_CONFIGRESULT_DME_FAILURE 10 /* Layer addressed by DME */
 
 /*
  * L1 attributes
@@ -318,7 +321,7 @@ void unipro_rxbuf_free(unsigned int cportid, void *ptr);
 #define N_TC1TXMAXSDUSIZE 0x3021
 
 /* Max device ID value */
-#define N_MAXDEVICEID     127
+#define N_MAXDEVICEID 127
 
 /*
  * L4 attributes
@@ -330,7 +333,7 @@ void unipro_rxbuf_free(unsigned int cportid, void *ptr);
 #define T_TSTCPORTID                 0x4080
 #define T_TSTSRCON                   0x4081
 #define T_TSTSRCPATTERN              0x4082
-    #define TSTSRCPATTERN_SAWTOOTH  (0x0)
+#define TSTSRCPATTERN_SAWTOOTH       (0x0)
 #define T_TSTSRCINCREMENT            0x4083
 #define T_TSTSRCMESSAGESIZE          0x4084
 #define T_TSTSRCMESSAGECOUNT         0x4085
@@ -350,21 +353,21 @@ void unipro_rxbuf_free(unsigned int cportid, void *ptr);
 #define T_PEERCPORTID                0x4022
 #define T_CONNECTIONSTATE            0x4020
 #define T_TRAFFICCLASS               0x4023
-    #define CPORT_TC0               (0x0)
-    #define CPORT_TC1               (0x1)
+#define CPORT_TC0                    (0x0)
+#define CPORT_TC1                    (0x1)
 #define T_PROTOCOLID                 0x4024
 #define T_CPORTFLAGS                 0x4025
-    #define CPORT_FLAGS_E2EFC       (1)
-    #define CPORT_FLAGS_CSD_N       (2)
-    #define CPORT_FLAGS_CSV_N       (4)
+#define CPORT_FLAGS_E2EFC            (1)
+#define CPORT_FLAGS_CSD_N            (2)
+#define CPORT_FLAGS_CSV_N            (4)
 #define T_TXTOKENVALUE               0x4026
 #define T_RXTOKENVALUE               0x4027
 #define T_LOCALBUFFERSPACE           0x4028
 #define T_PEERBUFFERSPACE            0x4029
 #define T_CREDITSTOSEND              0x402a
 #define T_CPORTMODE                  0x402b
-    #define CPORT_MODE_APPLICATION  (1)
-    #define CPORT_MODE_UNDER_TEST   (2)
+#define CPORT_MODE_APPLICATION       (1)
+#define CPORT_MODE_UNDER_TEST        (2)
 
 /*
  * DME attributes
@@ -386,10 +389,10 @@ void unipro_rxbuf_free(unsigned int cportid, void *ptr);
  * Values for DME_DDBL1_MANUFACTURERID and DME_DDBL1_PRODUCTID, used to
  * determine the type and revision of bridges
  */
-#define MANUFACTURER_TOSHIBA        0x0126
-#define PRODUCT_ES2_TSB_BRIDGE      0x1000
-#define PRODUCT_ES3_TSB_APBRIDGE    0x1001
-#define PRODUCT_ES3_TSB_GPBRIDGE    0x1002
+#define MANUFACTURER_TOSHIBA     0x0126
+#define PRODUCT_ES2_TSB_BRIDGE   0x1000
+#define PRODUCT_ES3_TSB_APBRIDGE 0x1001
+#define PRODUCT_ES3_TSB_GPBRIDGE 0x1002
 
 /*
  * Mailbox ACK attribute, ES specific.
@@ -402,14 +405,14 @@ void unipro_rxbuf_free(unsigned int cportid, void *ptr);
  * Warning: this attribute is used by the Unipro traffic generation on the
  * switch, cf. 'svc t' command
  */
-#define ES2_MBOX_ACK_ATTR           T_TSTSRCINTERMESSAGEGAP
-#define ES3_SYSTEM_STATUS_15        0x610f
-#define ES3_MBOX_ACK_ATTR           ES3_SYSTEM_STATUS_15
+#define ES2_MBOX_ACK_ATTR    T_TSTSRCINTERMESSAGEGAP
+#define ES3_SYSTEM_STATUS_15 0x610f
+#define ES3_MBOX_ACK_ATTR    ES3_SYSTEM_STATUS_15
 /* The bridges define only one value depending on the ES revision */
 #if defined(CONFIG_TSB_CHIP_REV_ES2)
-    #define MBOX_ACK_ATTR           ES2_MBOX_ACK_ATTR
+#define MBOX_ACK_ATTR ES2_MBOX_ACK_ATTR
 #elif defined(CONFIG_TSB_CHIP_REV_ES3)
-    #define MBOX_ACK_ATTR           ES3_MBOX_ACK_ATTR
+#define MBOX_ACK_ATTR ES3_MBOX_ACK_ATTR
 #endif
 
 /*
@@ -418,19 +421,9 @@ void unipro_rxbuf_free(unsigned int cportid, void *ptr);
  * Please use one of the unipro_{local,peer}_attr_{read,write}()
  * wrappers below if it is possible instead. They are more readable.
  */
-int unipro_attr_read(uint16_t attr,
-                     uint32_t *val,
-                     uint16_t selector,
-                     int peer);
-int unipro_attr_write(uint16_t attr,
-                      uint32_t val,
-                      uint16_t selector,
-                      int peer);
-int unipro_attr_access(uint16_t attr,
-                       uint32_t *val,
-                       uint16_t selector,
-                       int peer,
-                       int write);
+int unipro_attr_read(uint16_t attr, uint32_t *val, uint16_t selector, int peer);
+int unipro_attr_write(uint16_t attr, uint32_t val, uint16_t selector, int peer);
+int unipro_attr_access(uint16_t attr, uint32_t *val, uint16_t selector, int peer, int write);
 
 int unipro_disable_fct_tx_flow(unsigned int cport);
 int unipro_enable_fct_tx_flow(unsigned int cport);
@@ -439,32 +432,24 @@ int unipro_driver_register(struct unipro_driver *drv, unsigned int cportid);
 int unipro_driver_unregister(unsigned int cportid);
 void unipro_if_rx(unsigned int, void *, size_t);
 
-static inline int unipro_attr_local_read(uint16_t attr,
-                                         uint32_t *val,
-                                         uint16_t selector)
+static inline int unipro_attr_local_read(uint16_t attr, uint32_t *val, uint16_t selector)
 {
-    return unipro_attr_access(attr, val, selector, 0, 0);
+	return unipro_attr_access(attr, val, selector, 0, 0);
 }
 
-static inline int unipro_attr_peer_read(uint16_t attr,
-                                        uint32_t *val,
-                                        uint16_t selector)
+static inline int unipro_attr_peer_read(uint16_t attr, uint32_t *val, uint16_t selector)
 {
-    return unipro_attr_access(attr, val, selector, 1, 0);
+	return unipro_attr_access(attr, val, selector, 1, 0);
 }
 
-static inline int unipro_attr_local_write(uint16_t attr,
-                                          uint32_t val,
-                                          uint16_t selector)
+static inline int unipro_attr_local_write(uint16_t attr, uint32_t val, uint16_t selector)
 {
-    return unipro_attr_access(attr, &val, selector, 0, 1);
+	return unipro_attr_access(attr, &val, selector, 0, 1);
 }
 
-static inline int unipro_attr_peer_write(uint16_t attr,
-                                         uint32_t val,
-                                         uint16_t selector)
+static inline int unipro_attr_peer_write(uint16_t attr, uint32_t val, uint16_t selector)
 {
-    return unipro_attr_access(attr, &val, selector, 1, 1);
+	return unipro_attr_access(attr, &val, selector, 1, 1);
 }
 
 /*
@@ -478,38 +463,38 @@ static inline int unipro_attr_peer_write(uint16_t attr,
  * modes.
  */
 enum unipro_pwr_mode {
-    /*
-     * These four values go into DME attributes. Don't change them.
-     */
+	/*
+	 * These four values go into DME attributes. Don't change them.
+	 */
 
-    /** Permanently in FAST_STATE; i.e. a high speed (HS) M-PHY gear. */
-    UNIPRO_FAST_MODE = 1,
-    /** Permanently in SLOW_STATE; i.e. a PWM M-PHY gear. */
-    UNIPRO_SLOW_MODE = 2,
-    /** Alternating automatically between FAST_STATE (HS) and SLEEP_STATE. */
-    UNIPRO_FASTAUTO_MODE = 4,
-    /** Alternating automatically between SLOW_STATE (PWM) and SLEEP_STATE. */
-    UNIPRO_SLOWAUTO_MODE = 5,
-    /**
-     * Special value to use when you don't want to change one link
-     * direction's power mode */
-    UNIPRO_MODE_UNCHANGED = 7,
+	/** Permanently in FAST_STATE; i.e. a high speed (HS) M-PHY gear. */
+	UNIPRO_FAST_MODE = 1,
+	/** Permanently in SLOW_STATE; i.e. a PWM M-PHY gear. */
+	UNIPRO_SLOW_MODE = 2,
+	/** Alternating automatically between FAST_STATE (HS) and SLEEP_STATE. */
+	UNIPRO_FASTAUTO_MODE = 4,
+	/** Alternating automatically between SLOW_STATE (PWM) and SLEEP_STATE. */
+	UNIPRO_SLOWAUTO_MODE = 5,
+	/**
+	 * Special value to use when you don't want to change one link
+	 * direction's power mode */
+	UNIPRO_MODE_UNCHANGED = 7,
 
-    /*
-     * These values are random and can be changed if needd.
-     */
+	/*
+	 * These values are random and can be changed if needd.
+	 */
 
-    /** Hibernate mode */
-    UNIPRO_HIBERNATE_MODE = 100,
-    /** Powered off */
-    UNIPRO_OFF_MODE = 101,
+	/** Hibernate mode */
+	UNIPRO_HIBERNATE_MODE = 100,
+	/** Powered off */
+	UNIPRO_OFF_MODE = 101,
 };
 
 /** @brief UniPro frequency series in high speed mode. */
 enum unipro_hs_series {
-    UNIPRO_HS_SERIES_UNCHANGED = 0,
-    UNIPRO_HS_SERIES_A = 1,
-    UNIPRO_HS_SERIES_B = 2,
+	UNIPRO_HS_SERIES_UNCHANGED = 0,
+	UNIPRO_HS_SERIES_A = 1,
+	UNIPRO_HS_SERIES_B = 2,
 };
 
 /**
@@ -519,29 +504,29 @@ enum unipro_hs_series {
  * configuration procedure.
  */
 struct unipro_pwr_user_data {
-    /* Do not try to set any peer L2 Timeout Values */
-#   define UPRO_PWRF_NONE (0U)
-    /* Try to set peer DL_FC0PROTECTIONTIMEOUTVAL */
-#   define UPRO_PWRF_FC0  (1U << 0)
-    /* Try to set peer DL_TC0REPLAYTIMEOUTVAL */
-#   define UPRO_PWRF_TC0  (1U << 1)
-    /* Try to set peer DL_AFC0REQTIMEOUTVAL */
-#   define UPRO_PWRF_AFC0 (1U << 2)
-    /* Try to set peer DL_FC1PROTECTIONTIMEOUTVAL */
-#   define UPRO_PWRF_FC1  (1U << 3)
-    /* Try to set peer DL_TC1REPLAYTIMEOUTVAL */
-#   define UPRO_PWRF_TC1  (1U << 4)
-    /* Try to set peer DL_AFC1REQTIMEOUTVAL */
-#   define UPRO_PWRF_AFC1 (1U << 5)
-    uint32_t flags;
-    uint16_t upro_pwr_fc0_protection_timeout;
-    uint16_t upro_pwr_tc0_replay_timeout;
-    uint16_t upro_pwr_afc0_req_timeout;
-    uint16_t upro_pwr_fc1_protection_timeout;
-    uint16_t upro_pwr_tc1_replay_timeout;
-    uint16_t upro_pwr_afc1_req_timeout;
-    const uint16_t reserved_tc2[3];
-    const uint16_t reserved_tc3[3];
+	/* Do not try to set any peer L2 Timeout Values */
+#define UPRO_PWRF_NONE (0U)
+	/* Try to set peer DL_FC0PROTECTIONTIMEOUTVAL */
+#define UPRO_PWRF_FC0  (1U << 0)
+	/* Try to set peer DL_TC0REPLAYTIMEOUTVAL */
+#define UPRO_PWRF_TC0  (1U << 1)
+	/* Try to set peer DL_AFC0REQTIMEOUTVAL */
+#define UPRO_PWRF_AFC0 (1U << 2)
+	/* Try to set peer DL_FC1PROTECTIONTIMEOUTVAL */
+#define UPRO_PWRF_FC1  (1U << 3)
+	/* Try to set peer DL_TC1REPLAYTIMEOUTVAL */
+#define UPRO_PWRF_TC1  (1U << 4)
+	/* Try to set peer DL_AFC1REQTIMEOUTVAL */
+#define UPRO_PWRF_AFC1 (1U << 5)
+	uint32_t flags;
+	uint16_t upro_pwr_fc0_protection_timeout;
+	uint16_t upro_pwr_tc0_replay_timeout;
+	uint16_t upro_pwr_afc0_req_timeout;
+	uint16_t upro_pwr_fc1_protection_timeout;
+	uint16_t upro_pwr_tc1_replay_timeout;
+	uint16_t upro_pwr_afc1_req_timeout;
+	const uint16_t reserved_tc2[3];
+	const uint16_t reserved_tc3[3];
 } __attribute__((__packed__));
 
 /**
@@ -550,43 +535,37 @@ struct unipro_pwr_user_data {
  * This is used to configure a unipro link in one direction.
  */
 struct unipro_pwr_cfg {
-    enum unipro_pwr_mode  upro_mode;   /**< Power mode to set. */
-    uint8_t               upro_gear;   /**< M-PHY gear to use. */
-    uint8_t               upro_nlanes; /**< Number of active data lanes. */
+	enum unipro_pwr_mode upro_mode; /**< Power mode to set. */
+	uint8_t upro_gear;              /**< M-PHY gear to use. */
+	uint8_t upro_nlanes;            /**< Number of active data lanes. */
 } __attribute__((__packed__));
 
 /**
  * @brief UniPro link configuration.
  */
 struct unipro_link_cfg {
-    enum unipro_hs_series upro_hs_ser; /**< Frequency series in HS mode. */
-    struct unipro_pwr_cfg upro_tx_cfg; /**< Configuration for TX direction. */
-    struct unipro_pwr_cfg upro_rx_cfg; /**< Configuration for RX direction. */
+	enum unipro_hs_series upro_hs_ser; /**< Frequency series in HS mode. */
+	struct unipro_pwr_cfg upro_tx_cfg; /**< Configuration for TX direction. */
+	struct unipro_pwr_cfg upro_rx_cfg; /**< Configuration for RX direction. */
 
-    /** User-data (e.g. L2 timers) */
-    struct unipro_pwr_user_data upro_user;
+	/** User-data (e.g. L2 timers) */
+	struct unipro_pwr_user_data upro_user;
 
-#   define UPRO_LINKF_TX_TERMINATION (1U << 0) /**< TX termination is on. */
-#   define UPRO_LINKF_RX_TERMINATION (1U << 1) /**< RX termination is on. */
-#   define UPRO_LINKF_SCRAMBLING     (1U << 2) /**< Scrambling request. */
-    uint32_t flags;
+#define UPRO_LINKF_TX_TERMINATION (1U << 0) /**< TX termination is on. */
+#define UPRO_LINKF_RX_TERMINATION (1U << 1) /**< RX termination is on. */
+#define UPRO_LINKF_SCRAMBLING     (1U << 2) /**< Scrambling request. */
+	uint32_t flags;
 } __attribute__((__packed__));
 
-#define UNIPRO_PWR_CFG(_mode, gear, nlanes)                             \
-    {                                                                   \
-        .upro_mode = (_mode),                                           \
-        .upro_gear = (gear),                                            \
-        .upro_nlanes = (nlanes),                                        \
-    }
+#define UNIPRO_PWR_CFG(_mode, gear, nlanes)                                                        \
+	{                                                                                          \
+		.upro_mode = (_mode), .upro_gear = (gear), .upro_nlanes = (nlanes),                \
+	}
 
-#define UNIPRO_FAST_PWR_CFG(auto_, gear, nlanes)                        \
-    UNIPRO_PWR_CFG((auto_) ? UNIPRO_FASTAUTO_MODE : UNIPRO_FAST_MODE,   \
-                   (gear),                                              \
-                   (nlanes))
+#define UNIPRO_FAST_PWR_CFG(auto_, gear, nlanes)                                                   \
+	UNIPRO_PWR_CFG((auto_) ? UNIPRO_FASTAUTO_MODE : UNIPRO_FAST_MODE, (gear), (nlanes))
 
-#define UNIPRO_SLOW_PWR_CFG(auto_, gear, nlanes)                        \
-    UNIPRO_PWR_CFG((auto_) ? UNIPRO_SLOWAUTO_MODE : UNIPRO_SLOW_MODE,   \
-                   (gear),                                              \
-                   (nlanes))
+#define UNIPRO_SLOW_PWR_CFG(auto_, gear, nlanes)                                                   \
+	UNIPRO_PWR_CFG((auto_) ? UNIPRO_SLOWAUTO_MODE : UNIPRO_SLOW_MODE, (gear), (nlanes))
 
 #endif

@@ -47,69 +47,69 @@ LOG_MODULE_REGISTER(greybus_uart, CONFIG_GREYBUS_LOG_LEVEL);
 
 #include "uart-gb.h"
 
-#define GB_UART_VERSION_MAJOR   0
-#define GB_UART_VERSION_MINOR   1
+#define GB_UART_VERSION_MAJOR 0
+#define GB_UART_VERSION_MINOR 1
 
 /* Reserved buffer for rx data. */
-#define MAX_RX_BUF_NUMBER       5
-#define MAX_RX_BUF_SIZE         256
+#define MAX_RX_BUF_NUMBER 5
+#define MAX_RX_BUF_SIZE   256
 
 /* The id of error in protocol operating. */
-#define GB_UART_EVENT_PROTOCOL_ERROR    1
-#define GB_UART_EVENT_DEVICE_ERROR      2
+#define GB_UART_EVENT_PROTOCOL_ERROR 1
+#define GB_UART_EVENT_DEVICE_ERROR   2
 
 /**
  * The buffer node structure.
  */
 struct buf_node {
-    /** queue entry */
-    sq_entry_t          entry;
-    /** size of receiver data */
-    uint16_t            data_size;
-    /** flags of receiver data */
-    uint8_t             data_flags;
-    /** buffer of receiver data */
-    uint8_t             buffer[];
+	/** queue entry */
+	sq_entry_t entry;
+	/** size of receiver data */
+	uint16_t data_size;
+	/** flags of receiver data */
+	uint8_t data_flags;
+	/** buffer of receiver data */
+	uint8_t buffer[];
 };
 
 /**
  * UART protocol information structure.
  */
 struct gb_uart_info {
-    /** cport from greybus */
-    uint16_t            cport;
-    /* status change */
-    /** updated modem status from uart through callback */
-    uint8_t             updated_ms;
-    /** updated line status from uart through callback */
-    uint8_t             updated_ls;
-    /** the last status sent to the peer */
-    uint16_t            last_serial_state;
-    /** reserved operation for status report */
-    struct gb_operation *ms_ls_operation;
-    /** semaphore of status changing  */
-    sem_t               status_sem;
-    /** status change thread handle */
-    pthread_t           status_thread;
-    /* data receiving */
-    /** available buffer queue */
-    sq_queue_t          free_queue;
-    /** received data buffer queue */
-    sq_queue_t          data_queue;
-    /** buffer node in receiving */
-    struct buf_node      *rx_node;
-    /** buffer size for recevier */
-    int                 rx_buf_size;
-    /** amount of buffer */
-    int                 entries;
-    /** flag for requesting a free buffer in callback */
-    int                 require_node;
-    /** semaphore for notifying data received */
-    sem_t               rx_sem;
-    /** receiving data process threed */
-    pthread_t           rx_thread;
-    /** inform the thread should be terminated */
-    int                 thread_stop;
+	/** cport from greybus */
+	uint16_t cport;
+	/* status change */
+	/** updated modem status from uart through callback */
+	uint8_t updated_ms;
+	/** updated line status from uart through callback */
+	uint8_t updated_ls;
+	/** the last status sent to the peer */
+	uint16_t last_serial_state;
+	/** reserved operation for status report */
+	struct gb_operation *ms_ls_operation;
+	/** semaphore of status changing  */
+	sem_t status_sem;
+	/** status change thread handle */
+	pthread_t status_thread;
+	/* data receiving */
+	/** available buffer queue */
+	sq_queue_t free_queue;
+	/** received data buffer queue */
+	sq_queue_t data_queue;
+	/** buffer node in receiving */
+	struct buf_node *rx_node;
+	/** buffer size for recevier */
+	int rx_buf_size;
+	/** amount of buffer */
+	int entries;
+	/** flag for requesting a free buffer in callback */
+	int require_node;
+	/** semaphore for notifying data received */
+	sem_t rx_sem;
+	/** receiving data process threed */
+	pthread_t rx_thread;
+	/** inform the thread should be terminated */
+	int thread_stop;
 };
 
 /**
@@ -121,11 +121,11 @@ struct gb_uart_info {
  */
 static void put_node_back(sq_queue_t *queue, struct buf_node *node)
 {
-    irqstate_t flags = irq_lock();
+	irqstate_t flags = irq_lock();
 
-    sq_addlast(&node->entry, queue);
+	sq_addlast(&node->entry, queue);
 
-    irq_unlock(flags);
+	irq_unlock(flags);
 }
 
 /**
@@ -136,18 +136,18 @@ static void put_node_back(sq_queue_t *queue, struct buf_node *node)
  */
 static struct buf_node *get_node_from(sq_queue_t *queue)
 {
-    struct buf_node *node = NULL;
-    irqstate_t flags = irq_lock();
+	struct buf_node *node = NULL;
+	irqstate_t flags = irq_lock();
 
-    if (sq_empty(queue)) {
-        irq_unlock(flags);
-        return NULL;
-    }
+	if (sq_empty(queue)) {
+		irq_unlock(flags);
+		return NULL;
+	}
 
-    node = (struct buf_node *)sq_remfirst(queue);
-    irq_unlock(flags);
+	node = (struct buf_node *)sq_remfirst(queue);
+	irq_unlock(flags);
 
-    return node;
+	return node;
 }
 
 /**
@@ -164,16 +164,16 @@ static struct buf_node *get_node_from(sq_queue_t *queue)
  */
 static void uart_report_error(int error, const char *func_name)
 {
-    switch (error) {
-    case GB_UART_EVENT_PROTOCOL_ERROR:
-        LOG_INF("%s(): operation send error ", func_name);
-        break;
-    case GB_UART_EVENT_DEVICE_ERROR:
-        LOG_INF("%s(): device io error ", func_name);
-        break;
-    default:
-    break;
-    }
+	switch (error) {
+	case GB_UART_EVENT_PROTOCOL_ERROR:
+		LOG_INF("%s(): operation send error ", func_name);
+		break;
+	case GB_UART_EVENT_DEVICE_ERROR:
+		LOG_INF("%s(): device io error ", func_name);
+		break;
+	default:
+		break;
+	}
 }
 
 /**
@@ -186,13 +186,13 @@ static void uart_report_error(int error, const char *func_name)
  */
 static void uart_free_buf(sq_queue_t *queue)
 {
-    struct buf_node *node = NULL;
+	struct buf_node *node = NULL;
 
-    node = get_node_from(queue);
-    while (node) {
-        free(node);
-        node = get_node_from(queue);
-    }
+	node = get_node_from(queue);
+	while (node) {
+		free(node);
+		node = get_node_from(queue);
+	}
 }
 
 /**
@@ -207,23 +207,23 @@ static void uart_free_buf(sq_queue_t *queue)
  */
 static int uart_alloc_buf(int max_nodes, int buf_size, sq_queue_t *queue)
 {
-    struct buf_node *node = NULL;
-    int i = 0;
+	struct buf_node *node = NULL;
+	int i = 0;
 
-    for (i = 0; i < max_nodes; i++) {
-        node = malloc(sizeof(*node) + buf_size);
-        if (!node) {
-            /*
-             * It may have some buffers already be allocated, caller should
-             * free them.
-             */
-            return ENOMEM;
-            /* Keeping consistency with Nuttx APIs, so returns positive num */
-        }
-        put_node_back(queue, node);
-    }
+	for (i = 0; i < max_nodes; i++) {
+		node = malloc(sizeof(*node) + buf_size);
+		if (!node) {
+			/*
+			 * It may have some buffers already be allocated, caller should
+			 * free them.
+			 */
+			return ENOMEM;
+			/* Keeping consistency with Nuttx APIs, so returns positive num */
+		}
+		put_node_back(queue, node);
+	}
 
-    return 0;
+	return 0;
 }
 
 /**
@@ -238,14 +238,14 @@ static int uart_alloc_buf(int max_nodes, int buf_size, sq_queue_t *queue)
  */
 static void uart_ms_callback(void *data, uint8_t ms)
 {
-    struct gb_uart_info *info;
+	struct gb_uart_info *info;
 
-    DEBUGASSERT(data);
-    info = data;
+	DEBUGASSERT(data);
+	info = data;
 
-    info->updated_ms = ms;
+	info->updated_ms = ms;
 
-    sem_post(&info->status_sem);
+	sem_post(&info->status_sem);
 }
 
 /**
@@ -260,14 +260,14 @@ static void uart_ms_callback(void *data, uint8_t ms)
  */
 static void uart_ls_callback(void *data, uint8_t ls)
 {
-    struct gb_uart_info *info;
+	struct gb_uart_info *info;
 
-    DEBUGASSERT(data);
-    info = data;
+	DEBUGASSERT(data);
+	info = data;
 
-    info->updated_ls = ls;
+	info->updated_ls = ls;
 
-    sem_post(&info->status_sem);
+	sem_post(&info->status_sem);
 }
 
 /**
@@ -288,55 +288,53 @@ static void uart_ls_callback(void *data, uint8_t ls)
  * @param error Error code when driver receiving.
  * @return None.
  */
-static void uart_rx_callback(struct device *dev, void *data, uint8_t *buffer,
-                             int length, int error)
+static void uart_rx_callback(struct device *dev, void *data, uint8_t *buffer, int length, int error)
 {
-    struct gb_uart_info *info;
-    struct buf_node *node;
-    int ret;
-    uint8_t flags = 0;
+	struct gb_uart_info *info;
+	struct buf_node *node;
+	int ret;
+	uint8_t flags = 0;
 
-    DEBUGASSERT(data);
-    info = data;
+	DEBUGASSERT(data);
+	info = data;
 
-    info->rx_node->data_size = length;
+	info->rx_node->data_size = length;
 
-    if (error & LSR_OE) {
-        flags |= GB_UART_RECV_FLAG_OVERRUN;
-    }
-    if (error & LSR_PE) {
-        flags |= GB_UART_RECV_FLAG_PARITY;
-    }
-    if (error & LSR_FE) {
-        flags |= GB_UART_RECV_FLAG_FRAMING;
-    }
-    if (error & LSR_BI) {
-        flags |= GB_UART_RECV_FLAG_BREAK;
-    }
-    info->rx_node->data_flags = flags;
+	if (error & LSR_OE) {
+		flags |= GB_UART_RECV_FLAG_OVERRUN;
+	}
+	if (error & LSR_PE) {
+		flags |= GB_UART_RECV_FLAG_PARITY;
+	}
+	if (error & LSR_FE) {
+		flags |= GB_UART_RECV_FLAG_FRAMING;
+	}
+	if (error & LSR_BI) {
+		flags |= GB_UART_RECV_FLAG_BREAK;
+	}
+	info->rx_node->data_flags = flags;
 
-    put_node_back(&info->data_queue, info->rx_node);
-    /* notify rx thread to process this data*/
-    sem_post(&info->rx_sem);
+	put_node_back(&info->data_queue, info->rx_node);
+	/* notify rx thread to process this data*/
+	sem_post(&info->rx_sem);
 
-    node = get_node_from(&info->free_queue);
+	node = get_node_from(&info->free_queue);
 
-    if (!node) {
-        /*
-         * there is no free buffer, inform the rx thread to engage another uart
-         * receiver.
-         */
-        info->require_node = 1;
-        return;
-    }
+	if (!node) {
+		/*
+		 * there is no free buffer, inform the rx thread to engage another uart
+		 * receiver.
+		 */
+		info->require_node = 1;
+		return;
+	}
 
-    info->rx_node = node;
-    ret = device_uart_start_receiver(dev, node->buffer,
-                                     info->rx_buf_size,
-                                     NULL, NULL, uart_rx_callback);
-    if (ret) {
-        uart_report_error(GB_UART_EVENT_PROTOCOL_ERROR, __func__);
-    }
+	info->rx_node = node;
+	ret = device_uart_start_receiver(dev, node->buffer, info->rx_buf_size, NULL, NULL,
+					 uart_rx_callback);
+	if (ret) {
+		uart_report_error(GB_UART_EVENT_PROTOCOL_ERROR, __func__);
+	}
 }
 
 /**
@@ -350,19 +348,19 @@ static void uart_rx_callback(struct device *dev, void *data, uint8_t *buffer,
  */
 static uint8_t parse_ms_ls_registers(uint8_t modem_status, uint8_t line_status)
 {
-    uint16_t status = 0;
+	uint16_t status = 0;
 
-    if (modem_status & MSR_DCD) {
-        status |= GB_UART_CTRL_DCD;
-    }
-    if (modem_status & MSR_DSR) {
-        status |= GB_UART_CTRL_DSR;
-    }
-    if (modem_status & MSR_RI) {
-        status |= GB_UART_CTRL_RI;
-    }
+	if (modem_status & MSR_DCD) {
+		status |= GB_UART_CTRL_DCD;
+	}
+	if (modem_status & MSR_DSR) {
+		status |= GB_UART_CTRL_DSR;
+	}
+	if (modem_status & MSR_RI) {
+		status |= GB_UART_CTRL_RI;
+	}
 
-    return status;
+	return status;
 }
 
 /**
@@ -377,35 +375,34 @@ static uint8_t parse_ms_ls_registers(uint8_t modem_status, uint8_t line_status)
  */
 static void *uart_status_thread(void *data)
 {
-    uint16_t updated_status = 0;
-    struct gb_uart_serial_state_request *request;
-    struct gb_uart_info *info = data;
-    int ret = 0;
+	uint16_t updated_status = 0;
+	struct gb_uart_serial_state_request *request;
+	struct gb_uart_info *info = data;
+	int ret = 0;
 
-    while (1) {
-        sem_wait(&info->status_sem);
+	while (1) {
+		sem_wait(&info->status_sem);
 
-        if (info->thread_stop) {
-            break;
-        }
+		if (info->thread_stop) {
+			break;
+		}
 
-        updated_status = parse_ms_ls_registers(info->updated_ms,
-                                               info->updated_ls);
-        /*
-         * Only send the status bits which protocol need to know to peer
-         */
-        if (info->last_serial_state ^ updated_status) {
-            info->last_serial_state = updated_status;
-            request = gb_operation_get_request_payload(info->ms_ls_operation);
-            request->control = updated_status;
-            ret = gb_operation_send_request(info->ms_ls_operation, NULL, false);
-            if (ret) {
-                uart_report_error(GB_UART_EVENT_PROTOCOL_ERROR, __func__);
-            }
-        }
-    }
+		updated_status = parse_ms_ls_registers(info->updated_ms, info->updated_ls);
+		/*
+		 * Only send the status bits which protocol need to know to peer
+		 */
+		if (info->last_serial_state ^ updated_status) {
+			info->last_serial_state = updated_status;
+			request = gb_operation_get_request_payload(info->ms_ls_operation);
+			request->control = updated_status;
+			ret = gb_operation_send_request(info->ms_ls_operation, NULL, false);
+			if (ret) {
+				uart_report_error(GB_UART_EVENT_PROTOCOL_ERROR, __func__);
+			}
+		}
+	}
 
-    return NULL;
+	return NULL;
 }
 
 /**
@@ -421,60 +418,58 @@ static void *uart_status_thread(void *data)
  */
 static void *uart_rx_thread(void *data)
 {
-    struct gb_operation *operation = NULL;
-    struct gb_uart_receive_data_request *request = NULL;
-    struct buf_node *node = NULL;
-    struct gb_bundle *bundle = data;
-    struct gb_uart_info *info = bundle->priv;
-    struct device *dev = bundle->dev;
-    int ret;
+	struct gb_operation *operation = NULL;
+	struct gb_uart_receive_data_request *request = NULL;
+	struct buf_node *node = NULL;
+	struct gb_bundle *bundle = data;
+	struct gb_uart_info *info = bundle->priv;
+	struct device *dev = bundle->dev;
+	int ret;
 
-    while (1) {
-        sem_wait(&info->rx_sem);
+	while (1) {
+		sem_wait(&info->rx_sem);
 
-        if (info->thread_stop) {
-            break;
-        }
+		if (info->thread_stop) {
+			break;
+		}
 
-        node = get_node_from(&info->data_queue);
-        if (node) {
-            operation = gb_operation_create(info->cport,
-                                           GB_UART_PROTOCOL_RECEIVE_DATA,
-                                           sizeof(*request) + node->data_size);
-            if (!operation) {
-                uart_report_error(GB_UART_EVENT_PROTOCOL_ERROR, __func__);
-            } else {
-                request = gb_operation_get_request_payload(operation);
-                request->size = sys_cpu_to_le16(node->data_size);
-                request->flags = node->data_flags;
-                memcpy(request->data, node->buffer, node->data_size);
+		node = get_node_from(&info->data_queue);
+		if (node) {
+			operation = gb_operation_create(info->cport, GB_UART_PROTOCOL_RECEIVE_DATA,
+							sizeof(*request) + node->data_size);
+			if (!operation) {
+				uart_report_error(GB_UART_EVENT_PROTOCOL_ERROR, __func__);
+			} else {
+				request = gb_operation_get_request_payload(operation);
+				request->size = sys_cpu_to_le16(node->data_size);
+				request->flags = node->data_flags;
+				memcpy(request->data, node->buffer, node->data_size);
 
-                ret = gb_operation_send_request(operation, NULL, false);
-                if (ret) {
-                    uart_report_error(GB_UART_EVENT_PROTOCOL_ERROR, __func__);
-                }
-                gb_operation_destroy(operation);
-            }
-            put_node_back(&info->free_queue, node);
-        }
+				ret = gb_operation_send_request(operation, NULL, false);
+				if (ret) {
+					uart_report_error(GB_UART_EVENT_PROTOCOL_ERROR, __func__);
+				}
+				gb_operation_destroy(operation);
+			}
+			put_node_back(&info->free_queue, node);
+		}
 
-        /*
-         * In case there is no free node in callback.
-         */
-        if (info->require_node) {
-            node = get_node_from(&info->free_queue);
-            info->rx_node = node;
-            ret = device_uart_start_receiver(dev, node->buffer,
-                                             info->rx_buf_size, NULL,
-                                             NULL, uart_rx_callback);
-            if (ret) {
-                uart_report_error(GB_UART_EVENT_DEVICE_ERROR, __func__);
-            }
-            info->require_node = 0;
-        }
-    }
+		/*
+		 * In case there is no free node in callback.
+		 */
+		if (info->require_node) {
+			node = get_node_from(&info->free_queue);
+			info->rx_node = node;
+			ret = device_uart_start_receiver(dev, node->buffer, info->rx_buf_size, NULL,
+							 NULL, uart_rx_callback);
+			if (ret) {
+				uart_report_error(GB_UART_EVENT_DEVICE_ERROR, __func__);
+			}
+			info->require_node = 0;
+		}
+	}
 
-    return NULL;
+	return NULL;
 }
 
 /**
@@ -488,17 +483,17 @@ static void *uart_rx_thread(void *data)
  */
 static void uart_status_cb_deinit(struct gb_uart_info *info)
 {
-    if (info->status_thread != (pthread_t)0) {
-        info->thread_stop = 1;
-        sem_post(&info->status_sem);
-        pthread_join(info->status_thread, NULL);
-    }
+	if (info->status_thread != (pthread_t)0) {
+		info->thread_stop = 1;
+		sem_post(&info->status_sem);
+		pthread_join(info->status_thread, NULL);
+	}
 
-    sem_destroy(&info->status_sem);
+	sem_destroy(&info->status_sem);
 
-    if (info->ms_ls_operation) {
-        gb_operation_destroy(info->ms_ls_operation);
-    }
+	if (info->ms_ls_operation) {
+		gb_operation_destroy(info->ms_ls_operation);
+	}
 }
 
 /**
@@ -512,34 +507,32 @@ static void uart_status_cb_deinit(struct gb_uart_info *info)
  */
 static int uart_status_cb_init(struct gb_uart_info *info)
 {
-    int ret;
+	int ret;
 
-    info->ms_ls_operation =
-            gb_operation_create(info->cport,
-                                GB_UART_PROTOCOL_SERIAL_STATE,
-                                sizeof(struct gb_uart_serial_state_request));
-    if (!info->ms_ls_operation) {
-        return -ENOMEM;
-    }
+	info->ms_ls_operation = gb_operation_create(info->cport, GB_UART_PROTOCOL_SERIAL_STATE,
+						    sizeof(struct gb_uart_serial_state_request));
+	if (!info->ms_ls_operation) {
+		return -ENOMEM;
+	}
 
-    ret = sem_init(&info->status_sem, 0, 0);
-    if (ret) {
-        goto err_destroy_ms_ls_op;
-    }
+	ret = sem_init(&info->status_sem, 0, 0);
+	if (ret) {
+		goto err_destroy_ms_ls_op;
+	}
 
-    ret = pthread_create(&info->status_thread, NULL, uart_status_thread, info);
-    if (ret) {
-        goto err_destroy_status_sem;
-    }
+	ret = pthread_create(&info->status_thread, NULL, uart_status_thread, info);
+	if (ret) {
+		goto err_destroy_status_sem;
+	}
 
-    return 0;
+	return 0;
 
 err_destroy_status_sem:
-    sem_destroy(&info->status_sem);
+	sem_destroy(&info->status_sem);
 err_destroy_ms_ls_op:
-    gb_operation_destroy(info->ms_ls_operation);
+	gb_operation_destroy(info->ms_ls_operation);
 
-    return -ret;
+	return -ret;
 }
 
 /**
@@ -553,16 +546,16 @@ err_destroy_ms_ls_op:
  */
 static void uart_receiver_cb_deinit(struct gb_uart_info *info)
 {
-    if (info->rx_thread != (pthread_t)0) {
-        info->thread_stop = 1;
-        sem_post(&info->rx_sem);
-        pthread_join(info->rx_thread, NULL);
-    }
+	if (info->rx_thread != (pthread_t)0) {
+		info->thread_stop = 1;
+		sem_post(&info->rx_sem);
+		pthread_join(info->rx_thread, NULL);
+	}
 
-    sem_destroy(&info->rx_sem);
+	sem_destroy(&info->rx_sem);
 
-    uart_free_buf(&info->data_queue);
-    uart_free_buf(&info->free_queue);
+	uart_free_buf(&info->data_queue);
+	uart_free_buf(&info->free_queue);
 }
 
 /**
@@ -578,38 +571,38 @@ static void uart_receiver_cb_deinit(struct gb_uart_info *info)
  */
 static int uart_receiver_cb_init(struct gb_bundle *bundle)
 {
-    struct gb_uart_info *info = bundle->priv;
-    int ret;
+	struct gb_uart_info *info = bundle->priv;
+	int ret;
 
-    sq_init(&info->free_queue);
-    sq_init(&info->data_queue);
+	sq_init(&info->free_queue);
+	sq_init(&info->data_queue);
 
-    info->entries = MAX_RX_BUF_NUMBER;
-    info->rx_buf_size = MAX_RX_BUF_SIZE;
+	info->entries = MAX_RX_BUF_NUMBER;
+	info->rx_buf_size = MAX_RX_BUF_SIZE;
 
-    ret = uart_alloc_buf(info->entries, info->rx_buf_size, &info->free_queue);
-    if (ret) {
-        goto err_free_data_buf;
-    }
+	ret = uart_alloc_buf(info->entries, info->rx_buf_size, &info->free_queue);
+	if (ret) {
+		goto err_free_data_buf;
+	}
 
-    ret = sem_init(&info->rx_sem, 0, 0);
-    if (ret) {
-        goto err_free_data_buf;
-    }
+	ret = sem_init(&info->rx_sem, 0, 0);
+	if (ret) {
+		goto err_free_data_buf;
+	}
 
-    ret = pthread_create(&info->rx_thread, NULL, uart_rx_thread, bundle);
-    if (ret) {
-        goto err_destroy_rx_sem;
-    }
+	ret = pthread_create(&info->rx_thread, NULL, uart_rx_thread, bundle);
+	if (ret) {
+		goto err_destroy_rx_sem;
+	}
 
-    return 0;
+	return 0;
 
 err_destroy_rx_sem:
-    sem_destroy(&info->rx_sem);
+	sem_destroy(&info->rx_sem);
 err_free_data_buf:
-    uart_free_buf(&info->free_queue);
+	uart_free_buf(&info->free_queue);
 
-    return ret;
+	return ret;
 }
 
 /**
@@ -623,15 +616,16 @@ err_free_data_buf:
  */
 static uint8_t gb_uart_protocol_version(struct gb_operation *operation)
 {
-    struct gb_uart_proto_version_response *response = NULL;
+	struct gb_uart_proto_version_response *response = NULL;
 
-    response = gb_operation_alloc_response(operation, sizeof(*response));
-    if (!response)
-        return GB_OP_NO_MEMORY;
+	response = gb_operation_alloc_response(operation, sizeof(*response));
+	if (!response) {
+		return GB_OP_NO_MEMORY;
+	}
 
-    response->major = GB_UART_VERSION_MAJOR;
-    response->minor = GB_UART_VERSION_MINOR;
-    return GB_OP_SUCCESS;
+	response->major = GB_UART_VERSION_MAJOR;
+	response->minor = GB_UART_VERSION_MINOR;
+	return GB_OP_SUCCESS;
 }
 
 /**
@@ -645,35 +639,33 @@ static uint8_t gb_uart_protocol_version(struct gb_operation *operation)
  */
 static uint8_t gb_uart_send_data(struct gb_operation *operation)
 {
-    int ret, size;
-    int sent = 0;
-    size_t request_size = gb_operation_get_request_payload_size(operation);
-    struct gb_uart_send_data_request *request =
-                                   gb_operation_get_request_payload(operation);
-    struct gb_bundle *bundle;
+	int ret, size;
+	int sent = 0;
+	size_t request_size = gb_operation_get_request_payload_size(operation);
+	struct gb_uart_send_data_request *request = gb_operation_get_request_payload(operation);
+	struct gb_bundle *bundle;
 
-    if (request_size < sizeof(*request)) {
-        LOG_ERR("dropping short message");
-        return GB_OP_INVALID;
-    }
+	if (request_size < sizeof(*request)) {
+		LOG_ERR("dropping short message");
+		return GB_OP_INVALID;
+	}
 
-    size = sys_le16_to_cpu(request->size);
+	size = sys_le16_to_cpu(request->size);
 
-    if (request_size < sizeof(*request) + size) {
-        LOG_ERR("dropping short message");
-        return GB_OP_INVALID;
-    }
+	if (request_size < sizeof(*request) + size) {
+		LOG_ERR("dropping short message");
+		return GB_OP_INVALID;
+	}
 
-    bundle = gb_operation_get_bundle(operation);
-    DEBUGASSERT(bundle);
+	bundle = gb_operation_get_bundle(operation);
+	DEBUGASSERT(bundle);
 
-    ret = device_uart_start_transmitter(bundle->dev, request->data, size, NULL,
-                                        &sent, NULL);
-    if (ret) {
-        return GB_OP_UNKNOWN_ERROR;
-    }
+	ret = device_uart_start_transmitter(bundle->dev, request->data, size, NULL, &sent, NULL);
+	if (ret) {
+		return GB_OP_UNKNOWN_ERROR;
+	}
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 /**
@@ -687,75 +679,73 @@ static uint8_t gb_uart_send_data(struct gb_operation *operation)
  */
 static uint8_t gb_uart_set_line_coding(struct gb_operation *operation)
 {
-    int ret;
-    uint32_t baud;
-    enum uart_parity parity;
-    enum uart_stopbit stopbit;
-    uint8_t databits;
-    struct gb_serial_line_coding_request *request =
-                                   gb_operation_get_request_payload(operation);
-    struct gb_bundle *bundle;
+	int ret;
+	uint32_t baud;
+	enum uart_parity parity;
+	enum uart_stopbit stopbit;
+	uint8_t databits;
+	struct gb_serial_line_coding_request *request = gb_operation_get_request_payload(operation);
+	struct gb_bundle *bundle;
 
-    if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
-        LOG_ERR("dropping short message");
-        return GB_OP_INVALID;
-    }
+	if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
+		LOG_ERR("dropping short message");
+		return GB_OP_INVALID;
+	}
 
-    bundle = gb_operation_get_bundle(operation);
-    DEBUGASSERT(bundle);
+	bundle = gb_operation_get_bundle(operation);
+	DEBUGASSERT(bundle);
 
-    baud = sys_le32_to_cpu(request->rate);
+	baud = sys_le32_to_cpu(request->rate);
 
-    switch (request->format) {
-    case GB_SERIAL_1_STOP_BITS:
-        stopbit = ONE_STOP_BIT;
-        break;
-    case GB_SERIAL_1_5_STOP_BITS:
-        stopbit = ONE5_STOP_BITS;
-        break;
-    case GB_SERIAL_2_STOP_BITS:
-        stopbit = TWO_STOP_BITS;
-        break;
-    default:
-        return GB_OP_INVALID;
-        break;
-    }
+	switch (request->format) {
+	case GB_SERIAL_1_STOP_BITS:
+		stopbit = ONE_STOP_BIT;
+		break;
+	case GB_SERIAL_1_5_STOP_BITS:
+		stopbit = ONE5_STOP_BITS;
+		break;
+	case GB_SERIAL_2_STOP_BITS:
+		stopbit = TWO_STOP_BITS;
+		break;
+	default:
+		return GB_OP_INVALID;
+		break;
+	}
 
-    switch (request->parity) {
-    case GB_SERIAL_NO_PARITY:
-        parity = NO_PARITY;
-        break;
-    case GB_SERIAL_ODD_PARITY:
-        parity = ODD_PARITY;
-        break;
-    case GB_SERIAL_EVEN_PARITY:
-        parity = EVEN_PARITY;
-        break;
-    case GB_SERIAL_MARK_PARITY:
-        parity = MARK_PARITY;
-        break;
-    case GB_SERIAL_SPACE_PARITY:
-        parity = SPACE_PARITY;
-        break;
-    default:
-        return GB_OP_INVALID;
-        break;
-    }
+	switch (request->parity) {
+	case GB_SERIAL_NO_PARITY:
+		parity = NO_PARITY;
+		break;
+	case GB_SERIAL_ODD_PARITY:
+		parity = ODD_PARITY;
+		break;
+	case GB_SERIAL_EVEN_PARITY:
+		parity = EVEN_PARITY;
+		break;
+	case GB_SERIAL_MARK_PARITY:
+		parity = MARK_PARITY;
+		break;
+	case GB_SERIAL_SPACE_PARITY:
+		parity = SPACE_PARITY;
+		break;
+	default:
+		return GB_OP_INVALID;
+		break;
+	}
 
-    if (request->data > 8 || request->data < 5) {
-        return GB_OP_INVALID;
-    }
+	if (request->data > 8 || request->data < 5) {
+		return GB_OP_INVALID;
+	}
 
-    databits = request->data;
+	databits = request->data;
 
-    ret = device_uart_set_configuration(bundle->dev, baud, parity, databits,
-                                        stopbit, 1);
-                                        /* 1 for auto flow control enable */
-    if (ret) {
-        return GB_OP_UNKNOWN_ERROR;
-    }
+	ret = device_uart_set_configuration(bundle->dev, baud, parity, databits, stopbit, 1);
+	/* 1 for auto flow control enable */
+	if (ret) {
+		return GB_OP_UNKNOWN_ERROR;
+	}
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 /**
@@ -768,45 +758,45 @@ static uint8_t gb_uart_set_line_coding(struct gb_operation *operation)
  */
 static uint8_t gb_uart_set_control_line_state(struct gb_operation *operation)
 {
-    int ret;
-    uint8_t modem_ctrl = 0;
-    uint16_t control;
-    struct gb_uart_set_control_line_state_request *request =
-                                   gb_operation_get_request_payload(operation);
-    struct gb_bundle *bundle;
+	int ret;
+	uint8_t modem_ctrl = 0;
+	uint16_t control;
+	struct gb_uart_set_control_line_state_request *request =
+		gb_operation_get_request_payload(operation);
+	struct gb_bundle *bundle;
 
-    if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
-        LOG_ERR("dropping short message");
-        return GB_OP_INVALID;
-    }
+	if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
+		LOG_ERR("dropping short message");
+		return GB_OP_INVALID;
+	}
 
-    bundle = gb_operation_get_bundle(operation);
-    DEBUGASSERT(bundle);
+	bundle = gb_operation_get_bundle(operation);
+	DEBUGASSERT(bundle);
 
-    ret = device_uart_get_modem_ctrl(bundle->dev, &modem_ctrl);
-    if (ret) {
-        return GB_OP_UNKNOWN_ERROR;
-    }
+	ret = device_uart_get_modem_ctrl(bundle->dev, &modem_ctrl);
+	if (ret) {
+		return GB_OP_UNKNOWN_ERROR;
+	}
 
-    control = sys_le16_to_cpu(request->control);
-    if (control & GB_UART_CTRL_DTR) {
-        modem_ctrl |= MCR_DTR;
-    } else {
-        modem_ctrl &= ~MCR_DTR;
-    }
+	control = sys_le16_to_cpu(request->control);
+	if (control & GB_UART_CTRL_DTR) {
+		modem_ctrl |= MCR_DTR;
+	} else {
+		modem_ctrl &= ~MCR_DTR;
+	}
 
-    if (control & GB_UART_CTRL_RTS) {
-        modem_ctrl |= MCR_RTS;
-    } else {
-        modem_ctrl &= ~MCR_RTS;
-    }
+	if (control & GB_UART_CTRL_RTS) {
+		modem_ctrl |= MCR_RTS;
+	} else {
+		modem_ctrl &= ~MCR_RTS;
+	}
 
-    ret = device_uart_set_modem_ctrl(bundle->dev, &modem_ctrl);
-    if (ret) {
-        return GB_OP_UNKNOWN_ERROR;
-    }
+	ret = device_uart_set_modem_ctrl(bundle->dev, &modem_ctrl);
+	if (ret) {
+		return GB_OP_UNKNOWN_ERROR;
+	}
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 /**
@@ -819,25 +809,24 @@ static uint8_t gb_uart_set_control_line_state(struct gb_operation *operation)
  */
 static uint8_t gb_uart_send_break(struct gb_operation *operation)
 {
-    int ret;
-    struct gb_uart_set_break_request *request =
-                                   gb_operation_get_request_payload(operation);
-    struct gb_bundle *bundle;
+	int ret;
+	struct gb_uart_set_break_request *request = gb_operation_get_request_payload(operation);
+	struct gb_bundle *bundle;
 
-    if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
-        LOG_ERR("dropping short message");
-        return GB_OP_INVALID;
-    }
+	if (gb_operation_get_request_payload_size(operation) < sizeof(*request)) {
+		LOG_ERR("dropping short message");
+		return GB_OP_INVALID;
+	}
 
-    bundle = gb_operation_get_bundle(operation);
-    DEBUGASSERT(bundle);
+	bundle = gb_operation_get_bundle(operation);
+	DEBUGASSERT(bundle);
 
-    ret = device_uart_set_break(bundle->dev, request->state);
-    if (ret) {
-        return GB_OP_UNKNOWN_ERROR;
-    }
+	ret = device_uart_set_break(bundle->dev, request->state);
+	if (ret) {
+		return GB_OP_UNKNOWN_ERROR;
+	}
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 /**
@@ -852,78 +841,78 @@ static uint8_t gb_uart_send_break(struct gb_operation *operation)
  */
 static int gb_uart_init(unsigned int cport, struct gb_bundle *bundle)
 {
-    struct gb_uart_info *info;
-    int ret;
-    uint8_t ms = 0, ls = 0;
+	struct gb_uart_info *info;
+	int ret;
+	uint8_t ms = 0, ls = 0;
 
-    info = zalloc(sizeof(*info));
-    if (info == NULL) {
-        return -ENOMEM;
-    }
+	info = zalloc(sizeof(*info));
+	if (info == NULL) {
+		return -ENOMEM;
+	}
 
-    bundle->priv = info;
+	bundle->priv = info;
 
-    LOG_DBG("%s(): GB uart info struct: 0x%p ", __func__, info);
+	LOG_DBG("%s(): GB uart info struct: 0x%p ", __func__, info);
 
-    info->cport = cport;
+	info->cport = cport;
 
-    bundle->dev = device_open(DEVICE_TYPE_UART_HW, 0);
-    if (!bundle->dev) {
-        ret = -ENODEV;
-        goto err_device_close;
-    }
+	bundle->dev = device_open(DEVICE_TYPE_UART_HW, 0);
+	if (!bundle->dev) {
+		ret = -ENODEV;
+		goto err_device_close;
+	}
 
-    ret = uart_status_cb_init(info);
-     if (ret) {
-        goto err_device_close;
-     }
+	ret = uart_status_cb_init(info);
+	if (ret) {
+		goto err_device_close;
+	}
 
-    ret = uart_receiver_cb_init(bundle);
-    if (ret) {
-        goto err_status_cb_deinit;
-     }
+	ret = uart_receiver_cb_init(bundle);
+	if (ret) {
+		goto err_status_cb_deinit;
+	}
 
-    /* update serial status */
-    ret = device_uart_get_modem_status(bundle->dev, &ms);
-    if (ret) {
-        goto err_receiver_cb_deinit;
-    }
+	/* update serial status */
+	ret = device_uart_get_modem_status(bundle->dev, &ms);
+	if (ret) {
+		goto err_receiver_cb_deinit;
+	}
 
-    ret = device_uart_get_line_status(bundle->dev, &ls);
-    if (ret) {
-        goto err_receiver_cb_deinit;
-    }
+	ret = device_uart_get_line_status(bundle->dev, &ls);
+	if (ret) {
+		goto err_receiver_cb_deinit;
+	}
 
-    info->last_serial_state = parse_ms_ls_registers(ms, ls);
+	info->last_serial_state = parse_ms_ls_registers(ms, ls);
 
-    ret = device_uart_attach_ms_callback(bundle->dev, uart_ms_callback, info);
-    if (ret) {
-        goto err_receiver_cb_deinit;
-    }
+	ret = device_uart_attach_ms_callback(bundle->dev, uart_ms_callback, info);
+	if (ret) {
+		goto err_receiver_cb_deinit;
+	}
 
-    ret = device_uart_attach_ls_callback(bundle->dev, uart_ls_callback, info);
-    if (ret) {
-        goto err_clr_ms_callback;
-    }
+	ret = device_uart_attach_ls_callback(bundle->dev, uart_ls_callback, info);
+	if (ret) {
+		goto err_clr_ms_callback;
+	}
 
-    /* trigger the first receiving */
-    info->require_node = 1;
-    sem_post(&info->rx_sem);
+	/* trigger the first receiving */
+	info->require_node = 1;
+	sem_post(&info->rx_sem);
 
-    return 0;
+	return 0;
 
 err_clr_ms_callback:
-    device_uart_attach_ms_callback(bundle->dev, NULL, info);
+	device_uart_attach_ms_callback(bundle->dev, NULL, info);
 err_receiver_cb_deinit:
-    uart_receiver_cb_deinit(info);
+	uart_receiver_cb_deinit(info);
 err_status_cb_deinit:
-    uart_status_cb_deinit(info);
+	uart_status_cb_deinit(info);
 err_device_close:
-    device_close(bundle->dev);
-    bundle->priv = NULL;
-    bundle->dev = NULL;
-    free(info);
-    return ret;
+	device_close(bundle->dev);
+	bundle->priv = NULL;
+	bundle->dev = NULL;
+	free(info);
+	return ret;
 }
 
 /**
@@ -937,42 +926,42 @@ err_device_close:
  */
 static void gb_uart_exit(unsigned int cport, struct gb_bundle *bundle)
 {
-    struct gb_uart_info *info;
+	struct gb_uart_info *info;
 
-    DEBUGASSERT(bundle);
-    info = bundle->priv;
+	DEBUGASSERT(bundle);
+	info = bundle->priv;
 
-    if (!info)
-        return;
+	if (!info) {
+		return;
+	}
 
-    device_uart_attach_ls_callback(bundle->dev, NULL, NULL);
+	device_uart_attach_ls_callback(bundle->dev, NULL, NULL);
 
-    device_uart_attach_ms_callback(bundle->dev, NULL, NULL);
+	device_uart_attach_ms_callback(bundle->dev, NULL, NULL);
 
-    uart_receiver_cb_deinit(info);
+	uart_receiver_cb_deinit(info);
 
-    uart_status_cb_deinit(info);
+	uart_status_cb_deinit(info);
 
-    device_close(bundle->dev);
-    bundle->dev = NULL;
+	device_close(bundle->dev);
+	bundle->dev = NULL;
 
-    free(info);
+	free(info);
 }
 
 static struct gb_operation_handler gb_uart_handlers[] = {
-    GB_HANDLER(GB_UART_PROTOCOL_VERSION, gb_uart_protocol_version),
-    GB_HANDLER(GB_UART_PROTOCOL_SEND_DATA, gb_uart_send_data),
-    GB_HANDLER(GB_UART_PROTOCOL_SET_LINE_CODING, gb_uart_set_line_coding),
-    GB_HANDLER(GB_UART_PROTOCOL_SET_CONTROL_LINE_STATE,
-               gb_uart_set_control_line_state),
-    GB_HANDLER(GB_UART_PROTOCOL_SEND_BREAK, gb_uart_send_break),
+	GB_HANDLER(GB_UART_PROTOCOL_VERSION, gb_uart_protocol_version),
+	GB_HANDLER(GB_UART_PROTOCOL_SEND_DATA, gb_uart_send_data),
+	GB_HANDLER(GB_UART_PROTOCOL_SET_LINE_CODING, gb_uart_set_line_coding),
+	GB_HANDLER(GB_UART_PROTOCOL_SET_CONTROL_LINE_STATE, gb_uart_set_control_line_state),
+	GB_HANDLER(GB_UART_PROTOCOL_SEND_BREAK, gb_uart_send_break),
 };
 
 struct gb_driver uart_driver = {
-    .init = gb_uart_init,
-    .exit = gb_uart_exit,
-    .op_handlers = (struct gb_operation_handler*) gb_uart_handlers,
-    .op_handlers_count = ARRAY_SIZE(gb_uart_handlers),
+	.init = gb_uart_init,
+	.exit = gb_uart_exit,
+	.op_handlers = (struct gb_operation_handler *)gb_uart_handlers,
+	.op_handlers_count = ARRAY_SIZE(gb_uart_handlers),
 };
 
 /**
@@ -986,7 +975,6 @@ struct gb_driver uart_driver = {
  */
 void gb_uart_register(int cport, int bundle)
 {
-    LOG_INF("%s(): cport %d bundle %d", __func__, cport, bundle);
-    gb_register_driver(cport, bundle, &uart_driver);
+	LOG_INF("%s(): cport %d bundle %d", __func__, cport, bundle);
+	gb_register_driver(cport, bundle, &uart_driver);
 }
-

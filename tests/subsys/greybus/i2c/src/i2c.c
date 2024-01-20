@@ -12,8 +12,7 @@
 #include <ztest.h>
 #include <zephyr.h>
 
-#if defined(CONFIG_BOARD_NATIVE_POSIX_64BIT) ||                                \
-	defined(CONFIG_BOARD_NATIVE_POSIX_32BIT) ||                            \
+#if defined(CONFIG_BOARD_NATIVE_POSIX_64BIT) || defined(CONFIG_BOARD_NATIVE_POSIX_32BIT) ||        \
 	defined(CONFIG_BOARD_NRF52_BSIM)
 
 #include <arpa/inet.h>
@@ -39,7 +38,7 @@
 #include "test-greybus-i2c.h"
 
 #define TIMEOUT_MS 1000
-#define PORT 4243
+#define PORT       4243
 
 static struct device *i2c_dev;
 
@@ -56,8 +55,7 @@ void test_greybus_setup(void)
 	int r;
 
 	i2c_dev = device_get_binding(I2C_DEV_NAME);
-	zassert_not_equal(i2c_dev, NULL,
-			  "failed to get device binding for " I2C_DEV_NAME);
+	zassert_not_equal(i2c_dev, NULL, "failed to get device binding for " I2C_DEV_NAME);
 
 	r = socket(AF_INET6, SOCK_STREAM, 0);
 	__ASSERT(r >= 0, "connect: %d", errno);
@@ -75,8 +73,7 @@ void test_greybus_teardown(void)
 	}
 }
 
-static void tx_rx(const struct gb_operation_hdr *req,
-		  struct gb_operation_hdr *rsp, size_t rsp_size)
+static void tx_rx(const struct gb_operation_hdr *req, struct gb_operation_hdr *rsp, size_t rsp_size)
 {
 	int r;
 	int size;
@@ -98,16 +95,12 @@ static void tx_rx(const struct gb_operation_hdr *req,
 
 	r = recv(fd, rsp, hdr_size, 0);
 	zassert_not_equal(r, -1, "recv: %s", errno);
-	zassert_equal(hdr_size, r, "recv: expected: %u actual: %u",
-		      (unsigned)hdr_size, r);
+	zassert_equal(hdr_size, r, "recv: expected: %u actual: %u", (unsigned)hdr_size, r);
 
-	zassert_equal(rsp->id, req->id,
-			  "expected: 0x%04x actual: 0x%04x",
-			  sys_le16_to_cpu(req->id),
-			  sys_le16_to_cpu(rsp->id));
-	zassert_equal(rsp->type, GB_TYPE_RESPONSE_FLAG | req->type,
-			  "expected: %u actual: %u",
-			  GB_TYPE_RESPONSE_FLAG | req->type, rsp->type);
+	zassert_equal(rsp->id, req->id, "expected: 0x%04x actual: 0x%04x", sys_le16_to_cpu(req->id),
+		      sys_le16_to_cpu(rsp->id));
+	zassert_equal(rsp->type, GB_TYPE_RESPONSE_FLAG | req->type, "expected: %u actual: %u",
+		      GB_TYPE_RESPONSE_FLAG | req->type, rsp->type);
 }
 
 void test_greybus_i2c_protocol_version(void)
@@ -121,8 +114,7 @@ void test_greybus_i2c_protocol_version(void)
 		     sizeof(struct gb_i2c_proto_version_response)];
 	const size_t rsp_size = sizeof(rsp_);
 	struct gb_i2c_proto_version_response *const rsp =
-		(struct gb_i2c_proto_version_response
-			 *)(rsp_ + sizeof(struct gb_operation_hdr));
+		(struct gb_i2c_proto_version_response *)(rsp_ + sizeof(struct gb_operation_hdr));
 
 	tx_rx(&req, (struct gb_operation_hdr *)rsp_, rsp_size);
 
@@ -152,12 +144,10 @@ void test_greybus_i2c_functionality(void)
 		.id = sys_cpu_to_le16(0xabcd),
 		.type = GB_I2C_PROTOCOL_FUNCTIONALITY,
 	};
-	uint8_t rsp_[0 + sizeof(struct gb_operation_hdr) +
-		     sizeof(struct gb_i2c_functionality_rsp)];
+	uint8_t rsp_[0 + sizeof(struct gb_operation_hdr) + sizeof(struct gb_i2c_functionality_rsp)];
 	const size_t rsp_size = sizeof(rsp_);
 	struct gb_i2c_functionality_rsp *const rsp =
-		(struct gb_i2c_functionality_rsp
-			 *)(rsp_ + sizeof(struct gb_operation_hdr));
+		(struct gb_i2c_functionality_rsp *)(rsp_ + sizeof(struct gb_operation_hdr));
 	uint32_t expected_uint32;
 	uint32_t actual_uint32;
 
@@ -168,18 +158,14 @@ void test_greybus_i2c_functionality(void)
 		      ((struct gb_operation_hdr *)rsp_)->result);
 
 	expected_uint32 = GB_I2C_FUNC_I2C | GB_I2C_FUNC_SMBUS_READ_BYTE |
-			  GB_I2C_FUNC_SMBUS_WRITE_BYTE |
-			  GB_I2C_FUNC_SMBUS_READ_BYTE_DATA |
-			  GB_I2C_FUNC_SMBUS_WRITE_BYTE_DATA |
-			  GB_I2C_FUNC_SMBUS_READ_WORD_DATA |
-			  GB_I2C_FUNC_SMBUS_WRITE_WORD_DATA |
-			  GB_I2C_FUNC_SMBUS_READ_I2C_BLOCK |
+			  GB_I2C_FUNC_SMBUS_WRITE_BYTE | GB_I2C_FUNC_SMBUS_READ_BYTE_DATA |
+			  GB_I2C_FUNC_SMBUS_WRITE_BYTE_DATA | GB_I2C_FUNC_SMBUS_READ_WORD_DATA |
+			  GB_I2C_FUNC_SMBUS_WRITE_WORD_DATA | GB_I2C_FUNC_SMBUS_READ_I2C_BLOCK |
 			  GB_I2C_FUNC_SMBUS_WRITE_I2C_BLOCK;
 
 	actual_uint32 = sys_le32_to_cpu(rsp->functionality);
 
-	zassert_equal(expected_uint32, actual_uint32,
-		      "functionality: expected: %08x actual: %08x",
+	zassert_equal(expected_uint32, actual_uint32, "functionality: expected: %08x actual: %08x",
 		      expected_uint32, actual_uint32);
 }
 

@@ -24,7 +24,7 @@ LOG_MODULE_REGISTER(greybus_xsport_uart, CONFIG_GREYBUS_LOG_LEVEL);
 #define CPORT_ID_MAX 4095
 
 /* pad to not fill up ring buffer on GB_MTU */
-#define RB_PAD 8
+#define RB_PAD       8
 #define UART_RB_SIZE GB_MTU + RB_PAD
 
 static int sendMessage(struct device *dev, struct gb_operation_hdr *msg);
@@ -48,7 +48,7 @@ static void uart_work_fn(struct k_work *work)
 
 	expected_size = sizeof(*msg);
 	len = UART_RB_SIZE - ring_buf_space_get(&uart_rb);
-	while(len < expected_size){
+	while (len < expected_size) {
 		len = UART_RB_SIZE - ring_buf_space_get(&uart_rb);
 		k_usleep(100);
 	}
@@ -72,7 +72,7 @@ static void uart_work_fn(struct k_work *work)
 	}
 
 	len = UART_RB_SIZE - ring_buf_space_get(&uart_rb);
-	while(len < payload_size){
+	while (len < payload_size) {
 		len = UART_RB_SIZE - ring_buf_space_get(&uart_rb);
 		k_usleep(100);
 	}
@@ -92,8 +92,7 @@ static void uart_work_fn(struct k_work *work)
 	r = greybus_rx_handler(cport, msg, sys_le16_to_cpu(msg->size));
 	if (r < 0) {
 		LOG_DBG("failed to handle message : size: %u, id: %u, type: %u",
-		sys_le16_to_cpu(msg->size), sys_le16_to_cpu(msg->id),
-		msg->type);
+			sys_le16_to_cpu(msg->size), sys_le16_to_cpu(msg->id), msg->type);
 	}
 	free(data);
 	return;
@@ -141,8 +140,8 @@ static int gb_xport_send(unsigned int cport, const void *buf, size_t len)
 	LOG_HEXDUMP_DBG(msg, sys_le16_to_cpu(msg->size), "TX:");
 
 	if (sys_le16_to_cpu(msg->size) != len || len < sizeof(*msg)) {
-		LOG_ERR("invalid message size %u (len: %u)",
-			(unsigned)sys_le16_to_cpu(msg->size), (unsigned)len);
+		LOG_ERR("invalid message size %u (len: %u)", (unsigned)sys_le16_to_cpu(msg->size),
+			(unsigned)len);
 		return -EINVAL;
 	}
 
@@ -177,8 +176,7 @@ static void gb_xport_uart_isr(const struct device *dev, void *user_data)
 	uint8_t ovflw;
 	size_t count;
 
-	while (uart_irq_update(dev) &&
-	       uart_irq_is_pending(dev)) {
+	while (uart_irq_update(dev) && uart_irq_is_pending(dev)) {
 
 		if (!uart_irq_rx_ready(dev)) {
 			continue;
@@ -243,7 +241,8 @@ out:
 	return r;
 }
 
-struct gb_transport_backend *gb_transport_backend_init(size_t num_cports) {
+struct gb_transport_backend *gb_transport_backend_init(size_t num_cports)
+{
 
 	int r;
 	struct gb_transport_backend *ret = NULL;
@@ -253,18 +252,18 @@ struct gb_transport_backend *gb_transport_backend_init(size_t num_cports) {
 	if (num_cports >= CPORT_ID_MAX) {
 		LOG_ERR("invalid number of cports %u", (unsigned)num_cports);
 		goto out;
-		}
+	}
 
 	r = gb_xport_uart_init();
 	if (r < 0) {
 		goto out;
 	}
 
-    ret = (struct gb_transport_backend *)&gb_xport;
+	ret = (struct gb_transport_backend *)&gb_xport;
 
 	LOG_INF("Greybus UART Transport initialized");
 	goto out;
 
 out:
-    return ret;
+	return ret;
 }

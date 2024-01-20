@@ -23,15 +23,15 @@ LOG_MODULE_REGISTER(test_spi_sim, CONFIG_SPI_LOG_LEVEL);
 
 /* AT25 instruction set */
 typedef enum {
-	AT25_WRSR = 1, /* Write STATUS register        */
-	AT25_WRITE = 2, /* Write data to memory array   */
-	AT25_READ = 3, /* Read data from memory array  */
-	AT25_WRDI = 4, /* Reset the write enable latch */
-	AT25_RDSR = 5, /* Read STATUS register         */
-	AT25_WREN = 6, /* Set the write enable latch   */
+	AT25_WRSR = 1,    /* Write STATUS register        */
+	AT25_WRITE = 2,   /* Write data to memory array   */
+	AT25_READ = 3,    /* Read data from memory array  */
+	AT25_WRDI = 4,    /* Reset the write enable latch */
+	AT25_RDSR = 5,    /* Read STATUS register         */
+	AT25_WREN = 6,    /* Set the write enable latch   */
 	AT25_EONE = 0x52, /* Erase One Sector in Memory Array */
 	AT25_EALL = 0x62, /* Erase All Sectors in Memory Array */
-	AT25_RDR = 0x15, /* Read Manufacturer and Product ID */
+	AT25_RDR = 0x15,  /* Read Manufacturer and Product ID */
 } at25_op_t;
 
 /* AT25 status register bits */
@@ -43,8 +43,7 @@ typedef enum {
 } at25_status_t;
 
 static int spi_sim_callback(struct device *dev, const struct spi_config *config,
-			    const struct spi_buf_set *tx_bufs,
-			    const struct spi_buf_set *rx_bufs)
+			    const struct spi_buf_set *tx_bufs, const struct spi_buf_set *rx_bufs)
 {
 	static uint8_t status;
 	static uint8_t data[256];
@@ -67,7 +66,7 @@ static int spi_sim_callback(struct device *dev, const struct spi_config *config,
 
 	at25_op_t op = ((uint8_t *)tx->buf)[0] & (~0x08);
 
-	switch(op) {
+	switch (op) {
 	case AT25_WRSR:
 		break;
 	case AT25_WRITE:

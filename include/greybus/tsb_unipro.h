@@ -38,91 +38,91 @@
 /*
  * TSB attributes
  */
-#define TSB_T_REGACCCTRL_TESTONLY  0x007f
-#define TSB_DME_DDBL2_A            0x6000
-#define TSB_DME_DDBL2_B            0x6001
-#define TSB_DME_ES3_INIT_STATUS    0x6101
-#define TSB_MAILBOX                0xa000
-    #define TSB_MAIL_RESET         (0x00)
-    #define TSB_MAIL_READY_AP      (0x01)
-    #define TSB_MAIL_READY_OTHER   (0x02)
-#define TSB_DME_LAYERENABLEREQ     0xd000
-    #define TSB_LAYER_UNIPRO_EN    (0x01)
-#define TSB_DME_LAYERENABLECNF     0xd000
-    #define TSB_LAYER_SUCCESS      (0x01)
-    #define TSB_LAYER_FAILURE      (0x02)
-#define TSB_DME_RESETREQ           0xd010
-    #define TSB_RESET_COLD         (0x01)
-    #define TSB_RESET_WARM         (0x02)
-#define TSB_DME_RESETCNF           0xd010
-    #define TSB_RESET_COMPLETED    (0x01)
-#define TSB_DME_ENDPOINTRESETREQ   0xd011
-#define TSB_DME_ENDPOINTRESETCNF   0xd011
-#define TSB_DME_ENDPOINTRESETIND   0xd012
-#define TSB_DME_LINKSTARTUPREQ     0xd020
-    #define TSB_LINKUP_INITIATE    (0x01)
-#define TSB_DME_LINKSTARTUPCNF     0xd020
-    #define TSB_LINKUP_SUCCESS     (0x01)
-    #define TSB_LINKUP_FAIL        (0x02)
-#define TSB_DME_LINKSTARTUPIND     0xd021
-    #define TSB_LINKUP_IND_FAIL    (0x00)
-    #define TSB_LINKUP_IND_SUCCESS (0x01)
-#define TSB_DME_LINKLOSTIND        0xd022
-#define TSB_DME_HIBERNATEENTERREQ  0xd030
-#define TSB_DME_HIBERNATEENTERCNF  0xd030
-#define TSB_DME_HIBERNATEENTERIND  0xd031
-#define TSB_DME_HIBERNATEEXITREQ   0xd032
-#define TSB_DME_HIBERNATEEXITCNF   0xd032
-#define TSB_DME_HIBERNATEEXITIND   0xd033
-#define TSB_DME_POWERMODEIND       0xd040
-#define TSB_DME_TESTMODEREQ        0xd050
-#define TSB_DME_TESTMODECNF        0xd050
-#define TSB_DME_TESTMODEIND        0xd051
-#define TSB_DME_ERRORPHYIND        0xd060
-#define TSB_DME_ERRORPAIND         0xd061
-#define TSB_DME_ERRORDIND          0xd062
-#define TSB_DME_ERRORNIND          0xd063
-#define TSB_DME_ERRORTIND          0xd064
-#define TSB_INTERRUPTENABLE        0xd080
-#define TSB_INTERRUPTSTATUS        0xd081
-    #define TSB_INTERRUPTSTATUS_MAILBOX (1 << 15)
-#define TSB_L2STATUS               0xd082
-#define TSB_POWERSTATE             0xd083
-#define TSB_TXBURSTCLOSUREDELAY    0xd084
-#define TSB_MPHYCFGUPDT            0xd085
-#define TSB_ADJUSTTRAILINGCLOCKS   0xd086
-#define TSB_SUPPRESSRREQ           0xd087
-#define TSB_L2TIMEOUT              0xd088
-#define TSB_MAXSEGMENTCONFIG       0xd089
-#define TSB_TBD                    0xd090
-#define TSB_RBD                    0xd091
-#define TSB_DEBUGTXBYTECOUNT       0xd092
-#define TSB_DEBUGRXBYTECOUNT       0xd093
-#define TSB_DEBUGINVALIDBYTEENABLE 0xd094
-#define TSB_DEBUGLINKSTARTUP       0xd095
-#define TSB_DEBUGPWRCHANGE         0xd096
-#define TSB_DEBUGSTATES            0xd097
-#define TSB_DEBUGCOUNTER0          0xd098
-#define TSB_DEBUGCOUNTER1          0xd099
-#define TSB_DEBUGCOUNTER0MASK      0xd09a
-#define TSB_DEBUGCOUNTER1MASK      0xd09b
-#define TSB_DEBUGCOUNTERCONTROL    0xd09c
-#define TSB_DEBUGCOUNTEROVERFLOW   0xd09d
-#define TSB_DEBUGOMC               0xd09e
-#define TSB_DEBUGCOUNTERBMASK      0xd09f
-#define TSB_DEBUGSAVECONFIGTIME    0xd0a0
-#define TSB_DEBUGCLOCKENABLE       0xd0a1
-#define TSB_DEEPSTALLCFG           0xd0a2
-#define TSB_DEEPSTALLSTATUS        0xd0a3
+#define TSB_T_REGACCCTRL_TESTONLY   0x007f
+#define TSB_DME_DDBL2_A             0x6000
+#define TSB_DME_DDBL2_B             0x6001
+#define TSB_DME_ES3_INIT_STATUS     0x6101
+#define TSB_MAILBOX                 0xa000
+#define TSB_MAIL_RESET              (0x00)
+#define TSB_MAIL_READY_AP           (0x01)
+#define TSB_MAIL_READY_OTHER        (0x02)
+#define TSB_DME_LAYERENABLEREQ      0xd000
+#define TSB_LAYER_UNIPRO_EN         (0x01)
+#define TSB_DME_LAYERENABLECNF      0xd000
+#define TSB_LAYER_SUCCESS           (0x01)
+#define TSB_LAYER_FAILURE           (0x02)
+#define TSB_DME_RESETREQ            0xd010
+#define TSB_RESET_COLD              (0x01)
+#define TSB_RESET_WARM              (0x02)
+#define TSB_DME_RESETCNF            0xd010
+#define TSB_RESET_COMPLETED         (0x01)
+#define TSB_DME_ENDPOINTRESETREQ    0xd011
+#define TSB_DME_ENDPOINTRESETCNF    0xd011
+#define TSB_DME_ENDPOINTRESETIND    0xd012
+#define TSB_DME_LINKSTARTUPREQ      0xd020
+#define TSB_LINKUP_INITIATE         (0x01)
+#define TSB_DME_LINKSTARTUPCNF      0xd020
+#define TSB_LINKUP_SUCCESS          (0x01)
+#define TSB_LINKUP_FAIL             (0x02)
+#define TSB_DME_LINKSTARTUPIND      0xd021
+#define TSB_LINKUP_IND_FAIL         (0x00)
+#define TSB_LINKUP_IND_SUCCESS      (0x01)
+#define TSB_DME_LINKLOSTIND         0xd022
+#define TSB_DME_HIBERNATEENTERREQ   0xd030
+#define TSB_DME_HIBERNATEENTERCNF   0xd030
+#define TSB_DME_HIBERNATEENTERIND   0xd031
+#define TSB_DME_HIBERNATEEXITREQ    0xd032
+#define TSB_DME_HIBERNATEEXITCNF    0xd032
+#define TSB_DME_HIBERNATEEXITIND    0xd033
+#define TSB_DME_POWERMODEIND        0xd040
+#define TSB_DME_TESTMODEREQ         0xd050
+#define TSB_DME_TESTMODECNF         0xd050
+#define TSB_DME_TESTMODEIND         0xd051
+#define TSB_DME_ERRORPHYIND         0xd060
+#define TSB_DME_ERRORPAIND          0xd061
+#define TSB_DME_ERRORDIND           0xd062
+#define TSB_DME_ERRORNIND           0xd063
+#define TSB_DME_ERRORTIND           0xd064
+#define TSB_INTERRUPTENABLE         0xd080
+#define TSB_INTERRUPTSTATUS         0xd081
+#define TSB_INTERRUPTSTATUS_MAILBOX (1 << 15)
+#define TSB_L2STATUS                0xd082
+#define TSB_POWERSTATE              0xd083
+#define TSB_TXBURSTCLOSUREDELAY     0xd084
+#define TSB_MPHYCFGUPDT             0xd085
+#define TSB_ADJUSTTRAILINGCLOCKS    0xd086
+#define TSB_SUPPRESSRREQ            0xd087
+#define TSB_L2TIMEOUT               0xd088
+#define TSB_MAXSEGMENTCONFIG        0xd089
+#define TSB_TBD                     0xd090
+#define TSB_RBD                     0xd091
+#define TSB_DEBUGTXBYTECOUNT        0xd092
+#define TSB_DEBUGRXBYTECOUNT        0xd093
+#define TSB_DEBUGINVALIDBYTEENABLE  0xd094
+#define TSB_DEBUGLINKSTARTUP        0xd095
+#define TSB_DEBUGPWRCHANGE          0xd096
+#define TSB_DEBUGSTATES             0xd097
+#define TSB_DEBUGCOUNTER0           0xd098
+#define TSB_DEBUGCOUNTER1           0xd099
+#define TSB_DEBUGCOUNTER0MASK       0xd09a
+#define TSB_DEBUGCOUNTER1MASK       0xd09b
+#define TSB_DEBUGCOUNTERCONTROL     0xd09c
+#define TSB_DEBUGCOUNTEROVERFLOW    0xd09d
+#define TSB_DEBUGOMC                0xd09e
+#define TSB_DEBUGCOUNTERBMASK       0xd09f
+#define TSB_DEBUGSAVECONFIGTIME     0xd0a0
+#define TSB_DEBUGCLOCKENABLE        0xd0a1
+#define TSB_DEEPSTALLCFG            0xd0a2
+#define TSB_DEEPSTALLSTATUS         0xd0a3
 
 /* Special attributes for dealing with chip-specific Mailbox ACK attribute */
-#define ES2_MBOX_ACK_ATTR       T_TSTSRCINTERMESSAGEGAP
-#define ES3_SYSTEM_STATUS_15    0x610f
-#define ES3_MBOX_ACK_ATTR       ES3_SYSTEM_STATUS_15
+#define ES2_MBOX_ACK_ATTR    T_TSTSRCINTERMESSAGEGAP
+#define ES3_SYSTEM_STATUS_15 0x610f
+#define ES3_MBOX_ACK_ATTR    ES3_SYSTEM_STATUS_15
 
 /* Special-purpose usage of existing atttributes */
-#define TSB_ARA_VID                TSB_DME_DDBL2_A
-#define TSB_ARA_PID                TSB_DME_DDBL2_B
+#define TSB_ARA_VID TSB_DME_DDBL2_A
+#define TSB_ARA_PID TSB_DME_DDBL2_B
 
 int tsb_unipro_mbox_send(uint32_t val);
 

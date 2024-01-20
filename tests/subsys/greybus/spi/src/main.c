@@ -27,17 +27,16 @@ static void board_setup(void)
 extern void test_greybus_setup(void);
 extern void test_greybus_teardown(void);
 
-void test_main(void) {
+void test_main(void)
+{
 
 	board_setup();
 	test_greybus_setup();
-    ztest_test_suite(greybus_spi,
-        ztest_unit_test(test_greybus_spi_protocol_version),
-        ztest_unit_test(test_greybus_spi_cport_shutdown),
-        ztest_unit_test(test_greybus_spi_master_config),
-        ztest_unit_test(test_greybus_spi_device_config),
-        ztest_unit_test(test_greybus_spi_transfer)
-        );
-    ztest_run_test_suite(greybus_spi);
-    test_greybus_teardown();
+	ztest_test_suite(greybus_spi, ztest_unit_test(test_greybus_spi_protocol_version),
+			 ztest_unit_test(test_greybus_spi_cport_shutdown),
+			 ztest_unit_test(test_greybus_spi_master_config),
+			 ztest_unit_test(test_greybus_spi_device_config),
+			 ztest_unit_test(test_greybus_spi_transfer));
+	ztest_run_test_suite(greybus_spi);
+	test_greybus_teardown();
 }

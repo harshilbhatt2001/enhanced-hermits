@@ -27,7 +27,7 @@
  */
 
 #ifndef __CONFIGS_ARA_BRIDGE_INCLUDE_TIMESTAMPS_H
-#define  __CONFIGS_ARA_BRIDGE_INCLUDE_TIMESTAMPS_H
+#define __CONFIGS_ARA_BRIDGE_INCLUDE_TIMESTAMPS_H
 
 #include <nuttx/time.h>
 
@@ -35,16 +35,14 @@
 #define GREYBUS_FW_TIMESTAMP_GPBRDIGE 0x02
 
 struct gb_timestamp {
-    bool tag;
-    struct timeval entry_time;
-    struct timeval exit_time;
+	bool tag;
+	struct timeval entry_time;
+	struct timeval exit_time;
 };
 
-void gb_timestamp_tag_entry_time(struct gb_timestamp *ts,
-                                 unsigned int cportid);
-void gb_timestamp_tag_exit_time(struct gb_timestamp *ts,
-                                unsigned int cportid);
-void gb_timestamp_log(struct gb_timestamp *ts, unsigned int cportid,
-                      void *payload, size_t len, int id);
+void gb_timestamp_tag_entry_time(struct gb_timestamp *ts, unsigned int cportid);
+void gb_timestamp_tag_exit_time(struct gb_timestamp *ts, unsigned int cportid);
+void gb_timestamp_log(struct gb_timestamp *ts, unsigned int cportid, void *payload, size_t len,
+		      int id);
 void gb_timestamp_init(void);
 #endif

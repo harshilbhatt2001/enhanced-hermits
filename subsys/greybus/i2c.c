@@ -40,121 +40,120 @@
 
 static uint8_t gb_i2c_protocol_version(struct gb_operation *operation)
 {
-    struct gb_i2c_proto_version_response *response;
+	struct gb_i2c_proto_version_response *response;
 
-    response = gb_operation_alloc_response(operation, sizeof(*response));
-    if (!response)
-        return GB_OP_NO_MEMORY;
+	response = gb_operation_alloc_response(operation, sizeof(*response));
+	if (!response) {
+		return GB_OP_NO_MEMORY;
+	}
 
-    response->major = GB_I2C_VERSION_MAJOR;
-    response->minor = GB_I2C_VERSION_MINOR;
-    return GB_OP_SUCCESS;
+	response->major = GB_I2C_VERSION_MAJOR;
+	response->minor = GB_I2C_VERSION_MINOR;
+	return GB_OP_SUCCESS;
 }
 
 static uint8_t gb_i2c_protocol_functionality(struct gb_operation *operation)
 {
-    struct gb_i2c_functionality_rsp *response;
+	struct gb_i2c_functionality_rsp *response;
 
-    response = gb_operation_alloc_response(operation, sizeof(*response));
-    if (!response)
-        return GB_OP_NO_MEMORY;
+	response = gb_operation_alloc_response(operation, sizeof(*response));
+	if (!response) {
+		return GB_OP_NO_MEMORY;
+	}
 
-    response->functionality = sys_cpu_to_le32(GB_I2C_FUNC_I2C |
-                                          GB_I2C_FUNC_SMBUS_READ_BYTE |
-                                          GB_I2C_FUNC_SMBUS_WRITE_BYTE |
-                                          GB_I2C_FUNC_SMBUS_READ_BYTE_DATA |
-                                          GB_I2C_FUNC_SMBUS_WRITE_BYTE_DATA |
-                                          GB_I2C_FUNC_SMBUS_READ_WORD_DATA |
-                                          GB_I2C_FUNC_SMBUS_WRITE_WORD_DATA |
-                                          GB_I2C_FUNC_SMBUS_READ_I2C_BLOCK |
-                                          GB_I2C_FUNC_SMBUS_WRITE_I2C_BLOCK);
+	response->functionality = sys_cpu_to_le32(
+		GB_I2C_FUNC_I2C | GB_I2C_FUNC_SMBUS_READ_BYTE | GB_I2C_FUNC_SMBUS_WRITE_BYTE |
+		GB_I2C_FUNC_SMBUS_READ_BYTE_DATA | GB_I2C_FUNC_SMBUS_WRITE_BYTE_DATA |
+		GB_I2C_FUNC_SMBUS_READ_WORD_DATA | GB_I2C_FUNC_SMBUS_WRITE_WORD_DATA |
+		GB_I2C_FUNC_SMBUS_READ_I2C_BLOCK | GB_I2C_FUNC_SMBUS_WRITE_I2C_BLOCK);
 
-    return GB_OP_SUCCESS;
+	return GB_OP_SUCCESS;
 }
 
 static uint8_t gb_i2c_protocol_transfer(struct gb_operation *operation)
 {
-    int i, op_count;
-    uint32_t size = 0;
-    int ret;
-    uint8_t *write_data;
-    bool read_op;
-    int read_count = 0;
-    struct gb_bundle *bundle = gb_operation_get_bundle(operation);
-    __ASSERT_NO_MSG(bundle != NULL);
+	int i, op_count;
+	uint32_t size = 0;
+	int ret;
+	uint8_t *write_data;
+	bool read_op;
+	int read_count = 0;
+	struct gb_bundle *bundle = gb_operation_get_bundle(operation);
+	__ASSERT_NO_MSG(bundle != NULL);
 
-    unsigned int cport_idx = operation->cport - bundle->cport_start;
-    struct i2c_msg *requests;
+	unsigned int cport_idx = operation->cport - bundle->cport_start;
+	struct i2c_msg *requests;
 
-    struct gb_i2c_transfer_desc *desc;
-    struct gb_i2c_transfer_req *request;
-    struct gb_i2c_transfer_rsp *response;
-    const size_t req_size = gb_operation_get_request_payload_size(operation);
-    uint16_t addr = -1;
+	struct gb_i2c_transfer_desc *desc;
+	struct gb_i2c_transfer_req *request;
+	struct gb_i2c_transfer_rsp *response;
+	const size_t req_size = gb_operation_get_request_payload_size(operation);
+	uint16_t addr = -1;
 
-    if (req_size < sizeof(*request)) {
-        return GB_OP_INVALID;
-    }
+	if (req_size < sizeof(*request)) {
+		return GB_OP_INVALID;
+	}
 
-    request = gb_operation_get_request_payload(operation);
-    op_count = sys_le16_to_cpu(request->op_count);
-    write_data = (uint8_t *)&request->desc[op_count];
+	request = gb_operation_get_request_payload(operation);
+	op_count = sys_le16_to_cpu(request->op_count);
+	write_data = (uint8_t *)&request->desc[op_count];
 
-    if (req_size < sizeof(*request) + op_count * sizeof(request->desc[0])) {
-        return GB_OP_INVALID;
-    }
+	if (req_size < sizeof(*request) + op_count * sizeof(request->desc[0])) {
+		return GB_OP_INVALID;
+	}
 
-    for (i = 0; i < op_count; i++) {
-        desc = &request->desc[i];
-        read_op = (sys_le16_to_cpu(desc->flags) & GB_I2C_M_RD) ? true : false;
+	for (i = 0; i < op_count; i++) {
+		desc = &request->desc[i];
+		read_op = (sys_le16_to_cpu(desc->flags) & GB_I2C_M_RD) ? true : false;
 
-        if (read_op)
-            size += sys_le16_to_cpu(desc->size);
-    }
+		if (read_op) {
+			size += sys_le16_to_cpu(desc->size);
+		}
+	}
 
-    response = gb_operation_alloc_response(operation, size);
-    if (!response) {
-        return GB_OP_NO_MEMORY;
-    }
+	response = gb_operation_alloc_response(operation, size);
+	if (!response) {
+		return GB_OP_NO_MEMORY;
+	}
 
-    requests = malloc(sizeof(*requests) * op_count);
-    if (!requests) {
-        return GB_OP_NO_MEMORY;
-    }
+	requests = malloc(sizeof(*requests) * op_count);
+	if (!requests) {
+		return GB_OP_NO_MEMORY;
+	}
 
-    if (op_count > 0) {
-    	addr = sys_le16_to_cpu(request->desc[0].addr);
-    }
+	if (op_count > 0) {
+		addr = sys_le16_to_cpu(request->desc[0].addr);
+	}
 
-    for (i = 0; i < op_count; i++) {
-        desc = &request->desc[i];
-        read_op = (sys_le16_to_cpu(desc->flags) & GB_I2C_M_RD) ? true : false;
+	for (i = 0; i < op_count; i++) {
+		desc = &request->desc[i];
+		read_op = (sys_le16_to_cpu(desc->flags) & GB_I2C_M_RD) ? true : false;
 
-        if (sys_le16_to_cpu(desc->addr) != addr) {
-        	/* Zephyr only allows a single address to be used */
-        	ret = -EINVAL;
-        	goto free_requests;
-        }
+		if (sys_le16_to_cpu(desc->addr) != addr) {
+			/* Zephyr only allows a single address to be used */
+			ret = -EINVAL;
+			goto free_requests;
+		}
 
-        requests[i].flags = 0;
-        requests[i].len  = sys_le16_to_cpu(desc->size);
+		requests[i].flags = 0;
+		requests[i].len = sys_le16_to_cpu(desc->size);
 
-        if (read_op) {
-            requests[i].flags |= I2C_MSG_READ;
-            requests[i].buf = &response->data[read_count];
-            read_count += sys_le16_to_cpu(desc->size);
-        } else {
-            requests[i].buf = write_data;
-            write_data += sys_le16_to_cpu(desc->size);
-        }
-    }
+		if (read_op) {
+			requests[i].flags |= I2C_MSG_READ;
+			requests[i].buf = &response->data[read_count];
+			read_count += sys_le16_to_cpu(desc->size);
+		} else {
+			requests[i].buf = write_data;
+			write_data += sys_le16_to_cpu(desc->size);
+		}
+	}
 
-    ret = i2c_transfer(bundle->dev[cport_idx], requests, op_count, addr);
+	ret = i2c_transfer(bundle->dev[cport_idx], requests, op_count, addr);
 
 free_requests:
-    free(requests);
+	free(requests);
 
-    return gb_errno_to_op_result(ret);
+	return gb_errno_to_op_result(ret);
 }
 
 static int gb_i2c_init(unsigned int cport, struct gb_bundle *bundle)
@@ -162,12 +161,12 @@ static int gb_i2c_init(unsigned int cport, struct gb_bundle *bundle)
 	unsigned int cport_idx = cport - bundle->cport_start;
 	__ASSERT_NO_MSG(bundle != NULL);
 
-    bundle->dev[cport_idx] = (struct device *)gb_cport_to_device(cport);
-    if (!bundle->dev[cport_idx]) {
-        return -EIO;
-    }
+	bundle->dev[cport_idx] = (struct device *)gb_cport_to_device(cport);
+	if (!bundle->dev[cport_idx]) {
+		return -EIO;
+	}
 
-    return 0;
+	return 0;
 }
 
 static void gb_i2c_exit(unsigned int cport, struct gb_bundle *bundle)
@@ -177,20 +176,19 @@ static void gb_i2c_exit(unsigned int cport, struct gb_bundle *bundle)
 }
 
 static struct gb_operation_handler gb_i2c_handlers[] = {
-    GB_HANDLER(GB_I2C_PROTOCOL_VERSION, gb_i2c_protocol_version),
-    GB_HANDLER(GB_I2C_PROTOCOL_FUNCTIONALITY, gb_i2c_protocol_functionality),
-    GB_HANDLER(GB_I2C_PROTOCOL_TRANSFER, gb_i2c_protocol_transfer),
+	GB_HANDLER(GB_I2C_PROTOCOL_VERSION, gb_i2c_protocol_version),
+	GB_HANDLER(GB_I2C_PROTOCOL_FUNCTIONALITY, gb_i2c_protocol_functionality),
+	GB_HANDLER(GB_I2C_PROTOCOL_TRANSFER, gb_i2c_protocol_transfer),
 };
 
 static struct gb_driver gb_i2c_driver = {
-    .init = gb_i2c_init,
-    .exit = gb_i2c_exit,
-    .op_handlers = gb_i2c_handlers,
-    .op_handlers_count = ARRAY_SIZE(gb_i2c_handlers),
+	.init = gb_i2c_init,
+	.exit = gb_i2c_exit,
+	.op_handlers = gb_i2c_handlers,
+	.op_handlers_count = ARRAY_SIZE(gb_i2c_handlers),
 };
 
 void gb_i2c_register(int cport, int bundle)
 {
-    gb_register_driver(cport, bundle, &gb_i2c_driver);
+	gb_register_driver(cport, bundle, &gb_i2c_driver);
 }
-

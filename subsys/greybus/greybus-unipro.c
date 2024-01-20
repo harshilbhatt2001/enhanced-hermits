@@ -38,40 +38,40 @@ LOG_MODULE_REGISTER(greybus_unipro, CONFIG_GREYBUS_LOG_LEVEL);
 
 static int gb_unipro_rx_handler(unsigned int cport, void *data, size_t size)
 {
-    int retval;
+	int retval;
 
-    retval = greybus_rx_handler(cport, data, size);
+	retval = greybus_rx_handler(cport, data, size);
 
-    return retval;
+	return retval;
 }
 
 static struct unipro_driver greybus_driver = {
-    .name = "greybus",
-    .rx_handler = gb_unipro_rx_handler,
+	.name = "greybus",
+	.rx_handler = gb_unipro_rx_handler,
 };
 
 static int gb_unipro_listen(unsigned int cport)
 {
-    return unipro_driver_register(&greybus_driver, cport);
+	return unipro_driver_register(&greybus_driver, cport);
 }
 
 static int gb_unipro_stop_listening(unsigned int cport)
 {
-    return unipro_driver_unregister(cport);
+	return unipro_driver_unregister(cport);
 }
 
 struct gb_transport_backend gb_unipro_backend = {
-    .init = unipro_init,
-    .send = unipro_send,
-    .send_async = unipro_send_async,
-    .listen = gb_unipro_listen,
-    .stop_listening = gb_unipro_stop_listening,
-    .alloc_buf = bufram_alloc,
-    .free_buf = bufram_free,
+	.init = unipro_init,
+	.send = unipro_send,
+	.send_async = unipro_send_async,
+	.listen = gb_unipro_listen,
+	.stop_listening = gb_unipro_stop_listening,
+	.alloc_buf = bufram_alloc,
+	.free_buf = bufram_free,
 };
 
 int gb_unipro_init(void)
 {
-    LOG_DBG("Greybus: register unipro backend");
-    return gb_init(&gb_unipro_backend);
+	LOG_DBG("Greybus: register unipro backend");
+	return gb_init(&gb_unipro_backend);
 }

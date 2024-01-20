@@ -17,9 +17,8 @@
  * correspondingly, as if a wire were connecting the two.
  */
 
-static void gpio_emul_callback_handler(const struct device *port,
-				      struct gpio_callback *cb,
-				      gpio_port_pins_t pins)
+static void gpio_emul_callback_handler(const struct device *port, struct gpio_callback *cb,
+				       gpio_port_pins_t pins)
 {
 	int r;
 	int val;

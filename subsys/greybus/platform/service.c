@@ -29,11 +29,10 @@ static size_t num_cports;
 
 unsigned int unipro_cport_count(void)
 {
-    return num_cports;
+	return num_cports;
 }
 
-const struct gb_transport_backend *
-gb_transport_get_backend(void)
+const struct gb_transport_backend *gb_transport_get_backend(void)
 {
 	return xport;
 }
@@ -81,8 +80,9 @@ static int greybus_service_init(const struct device *bus)
 	}
 
 	combined_mnfb = malloc(mnfb_size);
-	if (!combined_mnfb)
-        return -ENOMEM;
+	if (!combined_mnfb) {
+		return -ENOMEM;
+	}
 	memcpy(combined_mnfb, mnfb, mnfb_size);
 
 #if defined(CONFIG_GREYBUS_CLICK_MANIFEST_BUILTIN) || defined(CONFIG_GREYBUS_CLICK_MANIFEST_CLICKID)
@@ -116,44 +116,44 @@ static int greybus_service_init(const struct device *bus)
 #endif
 	extern size_t manifest_get_num_cports(void);
 	num_cports = manifest_get_num_cports();
-    if (num_cports == 0) {
+	if (num_cports == 0) {
 		LOG_ERR("no cports are defined");
-        r = -EINVAL;
+		r = -EINVAL;
 		goto out;
-    }
+	}
 
-    xport = gb_transport_backend_init(num_cports);
-    if (xport == NULL) {
-        LOG_ERR("failed to get transport");
-        r = -EIO;
-        goto out;
-    }
+	xport = gb_transport_backend_init(num_cports);
+	if (xport == NULL) {
+		LOG_ERR("failed to get transport");
+		r = -EIO;
+		goto out;
+	}
 
-    set_manifest_blob(combined_mnfb);
+	set_manifest_blob(combined_mnfb);
 
-    r = gb_init((struct gb_transport_backend *) xport);
-    if (r < 0) {
-        LOG_ERR("gb_init() failed: %d", r);
-        goto clear_mnfb;
-    }
+	r = gb_init((struct gb_transport_backend *)xport);
+	if (r < 0) {
+		LOG_ERR("gb_init() failed: %d", r);
+		goto clear_mnfb;
+	}
 
-    enable_cports();
+	enable_cports();
 
-    LOG_INF("Greybus is active");
+	LOG_INF("Greybus is active");
 
-    r = 0;
-    goto out;
+	r = 0;
+	goto out;
 
 clear_mnfb:
-    set_manifest_blob(NULL);
+	set_manifest_blob(NULL);
 	free(combined_mnfb);
 
 out:
-    if (cports != NULL) {
-        free(cports);
-    }
+	if (cports != NULL) {
+		free(cports);
+	}
 
-    return r;
+	return r;
 }
 
 SYS_INIT(greybus_service_init, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);

@@ -10,11 +10,11 @@
 #include <devicetree.h>
 
 #if DT_NODE_HAS_STATUS(DT_ALIAS(spi_0), okay)
-#define SPI_DEV_NAME	DT_LABEL(DT_ALIAS(spi_0))
+#define SPI_DEV_NAME DT_LABEL(DT_ALIAS(spi_0))
 #elif DT_NODE_HAS_STATUS(DT_ALIAS(spi_1), okay)
-#define SPI_DEV_NAME	DT_LABEL(DT_ALIAS(spi_1))
+#define SPI_DEV_NAME DT_LABEL(DT_ALIAS(spi_1))
 #elif DT_NODE_HAS_STATUS(DT_ALIAS(spi_2), okay)
-#define SPI_DEV_NAME	DT_LABEL(DT_ALIAS(spi_2))
+#define SPI_DEV_NAME DT_LABEL(DT_ALIAS(spi_2))
 #else
 #error "Please set the correct SPI device"
 #endif

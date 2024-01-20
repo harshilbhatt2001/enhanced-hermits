@@ -19,8 +19,8 @@ extern "C" {
 #ifdef CONFIG_QEMU_TARGET
 /* Dirty hack because the Qemu GPIO does not emulate GPIO well enough */
 #define GPIO_DEV_NAME "GPIO_42"
-#define GPIO_PIN_OUT 0
-#define GPIO_PIN_IN 1
+#define GPIO_PIN_OUT  0
+#define GPIO_PIN_IN   1
 #else
 #if DT_NODE_HAS_STATUS(DT_INST(0, test_greybus_gpio), okay)
 /* Execution of the test requires hardware configuration described in
@@ -31,8 +31,8 @@ extern "C" {
  * aliases are supported for build-only tests.
  */
 #define GPIO_DEV_NAME DT_GPIO_LABEL(DT_INST(0, test_greybus_gpio), out_gpios)
-#define GPIO_PIN_OUT DT_GPIO_PIN(DT_INST(0, test_greybus_gpio), out_gpios)
-#define GPIO_PIN_IN DT_GPIO_PIN(DT_INST(0, test_greybus_gpio), in_gpios)
+#define GPIO_PIN_OUT  DT_GPIO_PIN(DT_INST(0, test_greybus_gpio), out_gpios)
+#define GPIO_PIN_IN   DT_GPIO_PIN(DT_INST(0, test_greybus_gpio), in_gpios)
 
 #elif DT_NODE_HAS_STATUS(DT_ALIAS(gpio_0), okay)
 #define GPIO_DEV_NAME DT_LABEL(DT_ALIAS(gpio_0))
@@ -47,7 +47,7 @@ extern "C" {
 #ifndef GPIO_PIN_OUT
 /* For build-only testing use fixed pins. */
 #define GPIO_PIN_OUT 2
-#define GPIO_PIN_IN 3
+#define GPIO_PIN_IN  3
 #endif
 #endif
 

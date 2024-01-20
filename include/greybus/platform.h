@@ -57,10 +57,13 @@ struct gb_spi_master_config_response;
 struct gb_spi_device_config_response;
 struct spi_cs_control;
 struct gb_platform_spi_api {
-	int (*controller_config_response)(const struct device *dev, struct gb_spi_master_config_response *rsp);
+	int (*controller_config_response)(const struct device *dev,
+					  struct gb_spi_master_config_response *rsp);
 	int (*num_peripherals)(const struct device *dev);
-	int (*peripheral_config_response)(const struct device *dev, uint8_t chip_select, struct gb_spi_device_config_response *rsp);
-	int (*get_cs_control)(const struct device *dev, uint8_t chip_select, struct spi_cs_control *ctrl);
+	int (*peripheral_config_response)(const struct device *dev, uint8_t chip_select,
+					  struct gb_spi_device_config_response *rsp);
+	int (*get_cs_control)(const struct device *dev, uint8_t chip_select,
+			      struct spi_cs_control *ctrl);
 };
 
 /*

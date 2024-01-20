@@ -26,22 +26,22 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef  _TIMESYNC_H_
-#define  _TIMESYNC_H_
+#ifndef _TIMESYNC_H_
+#define _TIMESYNC_H_
 
 #include <greybus/greybus.h>
 
 /* TimeSync finite state machine */
 enum timesync_state {
-        TIMESYNC_STATE_INVALID       = 0,
-        TIMESYNC_STATE_INACTIVE      = 1,
-        TIMESYNC_STATE_SYNCING       = 2,
-        TIMESYNC_STATE_ACTIVE        = 3,
-        TIMESYNC_STATE_DEBUG_ACTIVE  = 4,
+	TIMESYNC_STATE_INVALID = 0,
+	TIMESYNC_STATE_INACTIVE = 1,
+	TIMESYNC_STATE_SYNCING = 2,
+	TIMESYNC_STATE_ACTIVE = 3,
+	TIMESYNC_STATE_DEBUG_ACTIVE = 4,
 };
 
-int timesync_enable(uint8_t strobe_count, uint64_t frame_time,
-                    uint32_t strobe_delay, uint32_t refclk);
+int timesync_enable(uint8_t strobe_count, uint64_t frame_time, uint32_t strobe_delay,
+		    uint32_t refclk);
 int timesync_disable(void);
 int timesync_authoritative(uint64_t *frame_time);
 int timesync_get_last_event(uint64_t *frame_time);
@@ -54,4 +54,4 @@ void timesync_exit(void);
 uint64_t timesync_get_frame_time(void);
 int timesync_get_state(void);
 
-#endif	/* _TIMESYNC_H_ */
+#endif /* _TIMESYNC_H_ */

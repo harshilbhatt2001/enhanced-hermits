@@ -42,58 +42,58 @@
 #define GB_POWER_SUPPLY_TYPE_EVENT                0x07
 
 struct gb_power_supply_version_response {
-    __u8 major;
-    __u8 minor;
+	__u8 major;
+	__u8 minor;
 } __packed;
 
 struct gb_power_supply_get_supplies_response {
-    __u8 supplies_count;
+	__u8 supplies_count;
 } __packed;
 
 struct gb_power_supply_get_description_request {
-    __u8 psy_id;
+	__u8 psy_id;
 } __packed;
 
 struct gb_power_supply_get_description_response {
-    __u8   manufacturer[32];
-    __u8   model[32];
-    __u8   serial_number[32];
-    __le16 type;
-    __u8   properties_count;
+	__u8 manufacturer[32];
+	__u8 model[32];
+	__u8 serial_number[32];
+	__le16 type;
+	__u8 properties_count;
 } __packed;
 
 struct gb_power_supply_props_desc {
-    __u8 property;
-    __u8 is_writeable;
+	__u8 property;
+	__u8 is_writeable;
 } __packed;
 
 struct gb_power_supply_get_property_descriptors_request {
-    __u8 psy_id;
+	__u8 psy_id;
 } __packed;
 
 struct gb_power_supply_get_property_descriptors_response {
-    __u8   properties_count;
-    struct gb_power_supply_props_desc props[];
+	__u8 properties_count;
+	struct gb_power_supply_props_desc props[];
 } __packed;
 
 struct gb_power_supply_get_property_request {
-    __u8 psy_id;
-    __u8 property;
+	__u8 psy_id;
+	__u8 property;
 } __packed;
 
 struct gb_power_supply_get_property_response {
-    __le32 prop_val;
+	__le32 prop_val;
 };
 
 struct gb_power_supply_set_property_request {
-    __u8   psy_id;
-    __u8   property;
-    __le32 prop_val;
+	__u8 psy_id;
+	__u8 property;
+	__le32 prop_val;
 } __packed;
 
 struct gb_power_supply_event_request {
-    __u8 psy_id;
-    __u8 event;
+	__u8 psy_id;
+	__u8 event;
 } __packed;
 
 #endif /* __POWER_SUPPLY_GB_H__ */

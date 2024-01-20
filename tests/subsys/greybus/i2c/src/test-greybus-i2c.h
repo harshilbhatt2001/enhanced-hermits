@@ -26,13 +26,12 @@ extern "C" {
  */
 
 #ifndef DT_I2C_LABEL_BY_IDX
-#define DT_I2C_LABEL_BY_IDX(node_id, i2c_pha, idx) \
-		DT_PROP_BY_PHANDLE_IDX(node_id, i2c_pha, idx, label)
+#define DT_I2C_LABEL_BY_IDX(node_id, i2c_pha, idx)                                                 \
+	DT_PROP_BY_PHANDLE_IDX(node_id, i2c_pha, idx, label)
 #endif
 
 #ifndef DT_I2C_LABEL
-#define DT_I2C_LABEL(node_id, i2c_pha) \
-		DT_I2C_LABEL_BY_IDX(node_id, i2c_pha, 0)
+#define DT_I2C_LABEL(node_id, i2c_pha) DT_I2C_LABEL_BY_IDX(node_id, i2c_pha, 0)
 #endif
 
 #define I2C_DEV_NAME DT_I2C_LABEL(DT_INST(0, test_greybus_i2c), test_i2c)

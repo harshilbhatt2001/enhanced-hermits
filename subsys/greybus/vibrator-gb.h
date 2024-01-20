@@ -33,19 +33,19 @@
 #include <greybus/types.h>
 
 /* Greybus vibrator request types */
-#define GB_VIBRATOR_TYPE_INVALID             GB_INVALID_TYPE
-#define GB_VIBRATOR_TYPE_PROTOCOL_VERSION    0x01
-#define GB_VIBRATOR_TYPE_VIBRATOR_ON         0x02
-#define GB_VIBRATOR_TYPE_VIBRATOR_OFF        0x03
+#define GB_VIBRATOR_TYPE_INVALID          GB_INVALID_TYPE
+#define GB_VIBRATOR_TYPE_PROTOCOL_VERSION 0x01
+#define GB_VIBRATOR_TYPE_VIBRATOR_ON      0x02
+#define GB_VIBRATOR_TYPE_VIBRATOR_OFF     0x03
 
 /* version request has no payload */
 struct gb_vibrator_proto_version_response {
-    __u8 major;
-    __u8 minor;
+	__u8 major;
+	__u8 minor;
 } __packed;
 
 struct gb_vibrator_on_request {
-    __le16 timeout_ms;
+	__le16 timeout_ms;
 } __packed;
 
 #endif /* __VIBRATOR_GB_H__ */
