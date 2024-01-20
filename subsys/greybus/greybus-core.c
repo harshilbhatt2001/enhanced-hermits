@@ -58,8 +58,6 @@ extern int pthread_setname_np(pthread_t thread, const char *name);
 
 #define DEFAULT_STACK_SIZE CONFIG_PTHREAD_DYNAMIC_STACK_DEFAULT_SIZE
 
-void qsort(void *base, size_t nmemb, size_t size, int (*compar)(const void *, const void *));
-
 #endif
 
 #include <stdio.h>

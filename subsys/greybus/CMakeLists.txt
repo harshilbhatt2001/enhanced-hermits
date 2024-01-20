@@ -18,8 +18,7 @@ zephyr_library_sources(
   platform/bus.c
   platform/control.c
   platform/interface.c
-  platform/string.c
-  qsort.c)
+  platform/string.c)
 
 if(CONFIG_GREYBUS_MANIFEST_BUILTIN)
 
