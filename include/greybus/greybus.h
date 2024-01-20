@@ -42,7 +42,7 @@
 #endif
 
 #include <zephyr/sys/atomic.h>
-#include <list.h>
+#include <zephyr/sys/dlist.h>
 // #include <util.h>
 #include <unipro/unipro.h>
 #include <greybus/types.h>
@@ -121,7 +121,7 @@ struct gb_operation {
 	sem_t sync_sem;
 
 	void *priv_data;
-	struct list_head list;
+	sys_dnode_t node;
 
 	struct gb_operation *response;
 

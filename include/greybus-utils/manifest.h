@@ -29,10 +29,11 @@
 #ifndef _GREYBUS_UTILS_MANIFEST_H_
 #define _GREYBUS_UTILS_MANIFEST_H_
 
-#include <list.h>
+#include <zephyr/sys/dlist.h>
+#include <zephyr/types.h>
 
 struct gb_cport {
-	struct list_head list;
+	sys_dnode_t node;
 	int id;
 	int bundle;
 	int protocol;
@@ -49,7 +50,7 @@ void parse_manifest_blob(void *manifest);
 void enable_manifest(char *name, void *manifest, int device_id);
 void disable_manifest(char *name, void *priv, int device_id);
 void release_manifest_blob(void *manifest);
-struct list_head *get_manifest_cports(void);
+sys_dlist_t *get_manifest_cports(void);
 int get_manifest_size(void);
 size_t manifest_get_max_bundle_id(void);
 size_t manifest_get_num_cports_bundle(int bundle_id);
