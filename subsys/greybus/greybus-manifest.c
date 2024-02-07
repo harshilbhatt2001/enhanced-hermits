@@ -34,8 +34,8 @@
 #include <stdbool.h>
 #include <errno.h>
 #include <limits.h>
+#include <zephyr/sys/dlist.h>
 
-#include <list.h>
 #include <zephyr/sys/byteorder.h>
 #include <greybus-utils/utils.h>
 // #include <nuttx/util.h>
@@ -77,7 +77,7 @@ extern void gb_audio_mgmt_register(int cport, int bundle);
 extern void gb_audio_data_register(int cport, int bundle);
 
 struct greybus {
-	struct list_head cports;
+	sys_dlist_t cports;
 	struct greybus_driver *drv;
 	size_t max_bundle_id;
 	size_t max_property_id;
@@ -89,7 +89,7 @@ struct greybus {
 };
 
 static struct greybus g_greybus = {
-	.cports = LIST_INIT(g_greybus.cports),
+	.cports = SYS_DLIST_STATIC_INIT(&g_greybus.cports),
 	.max_bundle_id = 0,
 	.max_device_id = 0,
 	.max_string_id = 0,
@@ -114,19 +114,17 @@ static void *alloc_cport(void)
 		return NULL;
 	}
 
-	list_add(&g_greybus.cports, &gb_cport->list);
+	sys_dlist_append(&g_greybus.cports, &gb_cport->node);
 	return gb_cport;
 }
 
 static void free_cport(int cportid)
 {
-	struct gb_cport *gb_cport;
-	struct list_head *iter, *next;
-	list_foreach_safe(&g_greybus.cports, iter, next)
-	{
-		gb_cport = list_entry(iter, struct gb_cport, list);
+	struct gb_cport *gb_cport, *gb_cport_safe;
+
+	SYS_DLIST_FOR_EACH_CONTAINER_SAFE(&g_greybus.cports, gb_cport, gb_cport_safe, node) {
 		if (gb_cport->id == cportid) {
-			list_del(iter);
+			sys_dlist_remove(&gb_cport->node);
 			free(gb_cport);
 		}
 	}
@@ -135,14 +133,12 @@ static void free_cport(int cportid)
 #ifdef CONFIG_GREYBUS
 void enable_cports(void)
 {
-	struct list_head *iter;
 	struct gb_cport *gb_cport;
 	__attribute__((unused)) int cport_id;
 	__attribute__((unused)) int bundle_id;
 	__attribute__((unused)) int protocol;
-	list_foreach(&g_greybus.cports, iter)
-	{
-		gb_cport = list_entry(iter, struct gb_cport, list);
+
+	SYS_DLIST_FOR_EACH_CONTAINER(&g_greybus.cports, gb_cport, node) {
 		cport_id = gb_cport->id;
 		bundle_id = gb_cport->bundle;
 		protocol = gb_cport->protocol;
@@ -644,18 +640,18 @@ void disable_manifest(char *name, void *priv, int device_id)
 	}
 }
 
-struct list_head *get_manifest_cports(void)
+sys_dlist_t *get_manifest_cports(void)
 {
 	return &g_greybus.cports;
 }
 
+/* TODO: Replace this with sys_dlist_len after rebasing to master */
 size_t manifest_get_num_cports(void)
 {
+	struct gb_cport *gb_cport;
 	size_t r = 0;
-	struct list_head *iter;
 
-	list_foreach(&g_greybus.cports, iter)
-	{
+	SYS_DLIST_FOR_EACH_CONTAINER(&g_greybus.cports, gb_cport, node) {
 		r++;
 	}
 
@@ -665,12 +661,9 @@ size_t manifest_get_num_cports(void)
 size_t manifest_get_num_cports_bundle(int bundle_id)
 {
 	struct gb_cport *gb_cport;
-	struct list_head *iter;
 	size_t r = 0;
 
-	list_foreach(&g_greybus.cports, iter)
-	{
-		gb_cport = list_entry(iter, struct gb_cport, list);
+	SYS_DLIST_FOR_EACH_CONTAINER(&g_greybus.cports, gb_cport, node) {
 		if (gb_cport->bundle == bundle_id) {
 			r++;
 		}
@@ -682,12 +675,9 @@ size_t manifest_get_num_cports_bundle(int bundle_id)
 unsigned int manifest_get_start_cport_bundle(int bundle_id)
 {
 	struct gb_cport *gb_cport;
-	struct list_head *iter;
 	unsigned int cport_id = UINT_MAX;
 
-	list_foreach(&g_greybus.cports, iter)
-	{
-		gb_cport = list_entry(iter, struct gb_cport, list);
+	SYS_DLIST_FOR_EACH_CONTAINER(&g_greybus.cports, gb_cport, node) {
 		if (gb_cport->bundle == bundle_id && gb_cport->id < cport_id) {
 			cport_id = gb_cport->id;
 		}
