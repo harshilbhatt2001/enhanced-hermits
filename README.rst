@@ -7,7 +7,7 @@ Greybus for Zephyr
 
 Build Status
 ############
-.. image:: https://github.com/cfriedt/greybus-for-zephyr/workflows/CI/badge.svg
+.. image:: https://openbeagle.org/beagleconnect/zephyr/greybus-for-zephyr/badges/main/pipeline.svg
 
 Overview
 ########
@@ -25,7 +25,7 @@ Next, clone and synchronize repositories.
 
 .. code-block:: bash
 
-    west init -m https://github.com/cfriedt/greybus-for-zephyr.git zephyrproject
+    west init -m https://openbeagle.org/beagleconnect/greybus-for-zephyr.git zephyrproject
     cd zephyrproject
     west update
 
@@ -177,11 +177,11 @@ The contribution guidelines for this module follow the
 
 To summarize,
 
-#. Create an `Issue <https://github.com/cfriedt/greybus-for-zephyr/issues>`_
+#. Create an `Issue <https://openbeagle.org/beagleconnect/zephyr/greybus-for-zephyr/issues>`_
 #. Code up your contribution
 #. Code up any `tests <tests>`_ and `samples <samples>`_ as required
 #. Ensure that tests pass and samples run as expected
-#. Make a `Pull Request <https://github.com/cfriedt/greybus-for-zephyr/pulls>`_
+#. Make a `Pull Request <openbeagle.org/beagleconnect/zephyr/greybus-for-zephyr/-/merge_requests>`_
 
 Additional Information
 **********************
