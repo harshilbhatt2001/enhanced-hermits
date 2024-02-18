@@ -1,7 +1,7 @@
 image: zephyrprojectrtos/zephyr-build:v0.24.7
 
 variables:
-  ZEPHYR_BASE: /build/beagleconnect/zephyr/zephyr
+  ZEPHYR_BASE: /builds/beagleconnect/zephyr/zephyr
   PROJECT: greybus
   APP: samples/subsys/greybus/net
 
