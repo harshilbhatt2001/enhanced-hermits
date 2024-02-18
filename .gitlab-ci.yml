@@ -1,17 +1,14 @@
 image: zephyrprojectrtos/zephyr-build:v0.24.7
 
 variables:
-  BEAGLE_SDK: "/builds/beagleconnect/sdk"
-  ZEPHYR_BASE: "$BEAGLE_SDK/zephyr"
+  ZEPHYR_BASE: /build/beagleconnect/zephyr/zephyr
   PROJECT: greybus
   APP: samples/subsys/greybus/net
 
 build:
   stage: build
   before_script:
-    - rm -rf $BEAGLE_SDK
-    - west init -m https://git.beagleboard.org/beagleconnect/zephyr/zephyr --mr demo $BEAGLE_SDK
-    - cd $BEAGLE_SDK
+    - west init -l greybus
     - west update
     - west zephyr-export
     - pip3 install -r zephyr/scripts/requirements-base.txt
@@ -20,7 +17,6 @@ build:
     - west build -d buildx/freedom/$PROJECT -b beagleconnect_freedom $APP -- -DOVERLAY_CONFIG="overlay-802154-subg.conf"
     - mkdir -p build/freedom/$PROJECT/zephyr
     - cp buildx/freedom/$PROJECT/zephyr/zephyr.bin build/freedom/$PROJECT/zephyr/zephyr.bin
-    - cp $ZEPHYR_BASE/boards/arm/beagle_bcf/cc2538-bsl.py build/freedom/
   artifacts:
     paths:
       - build
