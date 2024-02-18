@@ -1,7 +1,6 @@
 image: zephyrprojectrtos/zephyr-build:v0.24.7
 
 variables:
-  ZEPHYR_BASE: /builds/beagleconnect/zephyr/zephyr
   PROJECT: greybus
   APP: samples/subsys/greybus/net
 
@@ -11,7 +10,7 @@ build:
     - west init -l .
     - west update
     - west zephyr-export
-    - pip3 install -r $ZEPHYR_BASE/scripts/requirements-base.txt
+    - pip3 install -r zephyr/scripts/requirements-base.txt
   script:
     - west build -d buildx/freedom/$PROJECT -b beagleconnect_freedom $APP -- -DOVERLAY_CONFIG="overlay-802154-subg.conf"
     - mkdir -p build/freedom/$PROJECT/zephyr
