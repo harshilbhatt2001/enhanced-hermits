@@ -8,12 +8,11 @@ variables:
 build:
   stage: build
   before_script:
-    - west init -l greybus
+    - west init -l .
     - west update
     - west zephyr-export
     - pip3 install -r zephyr/scripts/requirements-base.txt
   script:
-    - cd $CI_PROJECT_DIR
     - west build -d buildx/freedom/$PROJECT -b beagleconnect_freedom $APP -- -DOVERLAY_CONFIG="overlay-802154-subg.conf"
     - mkdir -p build/freedom/$PROJECT/zephyr
     - cp buildx/freedom/$PROJECT/zephyr/zephyr.bin build/freedom/$PROJECT/zephyr/zephyr.bin
