@@ -9,5 +9,13 @@ manifest:
   projects:
     - name: zephyr
       remote: beagle-sdk
-      revision: demo
+      revision: sdk 
       import: true
+    - name: hal_nordic
+      remote: zephyrproject-rtos
+      revision: 6d4acb8dbd9e92c7c5d6e18724197e3f007ae45e
+      path: zephyr/modules/hal/nordic
+    - name: nrf_hw_models
+      remote: zephyrproject-rtos
+      revision: 85944c64f224406e4d781aa382c5f1f71ed307fd
+      path: zephyr/modules/bsim_hw_models/nrf_hw_models
