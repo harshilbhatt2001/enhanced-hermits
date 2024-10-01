@@ -25,8 +25,8 @@ Next, clone and synchronize repositories.
 
 .. code-block:: bash
 
-    west init -m https://openbeagle.org/beagleconnect/greybus-for-zephyr.git zephyrproject
-    cd zephyrproject
+    west init -m https://github.com/harshilbhatt2001/enhanced-hermits.git enhanced-hermits
+    cd enhanced-hermits
     west update
 
 While that is updating, choose a board from Zephyr's list of 
@@ -48,9 +48,6 @@ Lastly, flash firmware for the chosen ``$BOARD`` using the commands below.
 
     cd zephyr
     source zephyr-env.sh
-    git apply ../greybus/zephyr-gpio-get-direction.patch
-    git apply ../greybus/zephyr-sys-byteorder-posix.patch
-    git apply ../greybus/zephyr-dynamic-pthread-stacks.patch
     west build -b $BOARD -t flash ../greybus/samples/subsys/greybus/net
 
 A number of patches are required until respective functionality is added upstream in
