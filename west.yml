@@ -6,8 +6,12 @@ manifest:
       url-base: https://github.com/zephyrproject-rtos
     - name: beagle-sdk
       url-base: https://openbeagle.org/beagleconnect/zephyr
+    - name: beagle-gsoc
+      url-base: https://openbeagle.org/gsoc/greybus/
   projects:
     - name: zephyr
+      #remote: zephyrproject-rtos
+      #revision: main
       remote: beagle-sdk
       revision: sdk 
       import: true
@@ -15,7 +19,15 @@ manifest:
       remote: zephyrproject-rtos
       revision: 6d4acb8dbd9e92c7c5d6e18724197e3f007ae45e
       path: zephyr/modules/hal/nordic
+    - name: hal_espressif
+      remote: zephyrproject-rtos
+      revision: abe299333411cb37a1cb1dd0aa2ea35c27382604
+      path: zephyr/modules/hal/espressif
     - name: nrf_hw_models
       remote: zephyrproject-rtos
       revision: 85944c64f224406e4d781aa382c5f1f71ed307fd
       path: zephyr/modules/bsim_hw_models/nrf_hw_models
+    - name: cc1352-firmware
+      remote: beagle-gsoc
+      revision: main
+      import: false
