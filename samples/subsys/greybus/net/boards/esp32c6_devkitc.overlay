@@ -1,0 +1,113 @@
+/*
+ * Copyright (c) 2024 
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+#include <dt-bindings/greybus/greybus.h>
+#include <dt-bindings/gpio/gpio.h>
+// #include <dt-bindings/i2c/i2c.h>
+
+/ {
+    aliases {
+        led0 = &user_led;
+    };
+
+    leds {
+        compatible = "gpio-leds";
+        user_led: led_0 {
+            gpios = <&gpio0 8 GPIO_ACTIVE_LOW>;
+            label = "User LED";
+        };
+    };
+
+    // resources {
+    //     compatible = "test,greybus-i2c";
+    //     test-i2c = <&i2c0>;
+    // };
+
+    greybus0: greybus0 {
+        compatible = "zephyr,greybus";
+        greybus;
+        status = "okay";
+    };
+};
+
+&wifi {
+    status = "okay";
+};
+
+// &i2c0 {
+//     status = "okay";
+//     clock-frequency = <I2C_BITRATE_STANDARD>;
+//     pinctrl-0 = <&i2c0_default>;
+//     pinctrl-names = "default";
+// };
+
+&gpio0 {
+    status = "okay";
+    gpio-controller;
+    #gpio-cells = <2>;
+};
+
+
+&greybus0 {
+    status = "okay";
+    version-major = <GREYBUS_VERSION_MAJOR>;
+    version-minor = <GREYBUS_VERSION_MINOR>;
+
+    gbstring1: gbstring1 {
+        status = "okay";
+        compatible = "zephyr,greybus-string";
+        id = <1>;
+        greybus-string = "Zephyr Project RTOS";
+    };
+
+    gbstring2: gbstring2 {
+        status = "okay";
+        compatible = "zephyr,greybus-string";
+        id = <2>;
+        greybus-string = "Greybus Service Sample Application";
+    };
+
+    gbinterface0 {
+        status = "okay";
+        compatible = "zephyr,greybus-interface";
+        vendor-string-id = <&gbstring1>;
+        product-string-id = <&gbstring2>;
+        greybus-interface;
+    };
+
+    gbbundle0 {
+        status = "okay";
+        compatible = "zephyr,greybus-bundle";
+        greybus-bundle;
+        id = <CONTROL_BUNDLE_ID>;
+        bundle-class = <BUNDLE_CLASS_CONTROL>;
+
+        gbcontrol0 {
+            status = "okay";
+            compatible = "zephyr,greybus-control";
+            greybus-controller;
+            id = <CONTROL_CPORT_ID>;
+            cport-protocol = <CPORT_PROTOCOL_CONTROL>;
+        };
+    };
+
+    gbbundle1 {
+        status = "okay";
+        compatible = "zephyr,greybus-bundle";
+        greybus-bundle;
+        id = <1>;
+        bundle-class = <BUNDLE_CLASS_BRIDGED_PHY>;
+
+        gbgpio0 {
+            status = "okay";
+            compatible = "zephyr,greybus-gpio-controller";
+            greybus-gpio-controller = <&gpio0>;
+            id = <1>;
+            cport-protocol = <CPORT_PROTOCOL_GPIO>;
+        };
+    };
+};
+

@@ -23,15 +23,15 @@ zephyr_library_sources(
 if(CONFIG_GREYBUS_MANIFEST_BUILTIN)
 
   devicetree_unfixed_h_to_mnfs(
-    ${PROJECT_BINARY_DIR}/include/generated/devicetree_generated.h
-    ${PROJECT_BINARY_DIR}/include/generated/greybus.mnfs)
+    ${PROJECT_BINARY_DIR}/include/generated/zephyr/devicetree_generated.h
+    ${PROJECT_BINARY_DIR}/include/generated/zephyr/greybus.mnfs)
 
-  mnfs_to_mnfb(${PROJECT_BINARY_DIR}/include/generated/greybus.mnfs
-               ${PROJECT_BINARY_DIR}/include/generated/greybus.mnfb)
+  mnfs_to_mnfb(${PROJECT_BINARY_DIR}/include/generated/zephyr/greybus.mnfs
+               ${PROJECT_BINARY_DIR}/include/generated/zephyr/greybus.mnfb)
 
   generate_inc_file_for_target(
-    app ${PROJECT_BINARY_DIR}/include/generated/greybus.mnfb
-    ${PROJECT_BINARY_DIR}/include/generated/greybus_mnfb.inc)
+    app ${PROJECT_BINARY_DIR}/include/generated/zephyr/greybus.mnfb
+    ${PROJECT_BINARY_DIR}/include/generated/zephyr/greybus_mnfb.inc)
 endif()
 
 if(CONFIG_GREYBUS_TLS_BUILTIN)

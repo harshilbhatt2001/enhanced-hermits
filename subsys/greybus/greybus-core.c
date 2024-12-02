@@ -55,7 +55,7 @@ extern int pthread_setname_np(pthread_t thread, const char *name);
 #include <zephyr/posix/pthread.h>
 #include <zephyr/posix/semaphore.h>
 
-#define DEFAULT_STACK_SIZE CONFIG_PTHREAD_DYNAMIC_STACK_DEFAULT_SIZE
+#define DEFAULT_STACK_SIZE 8192
 
 #endif
 
@@ -269,6 +269,7 @@ static void gb_process_request(struct gb_operation_hdr *hdr, struct gb_operation
 	LOG_DBG("%s: %u", gb_handler_name(op_handler), result);
 
 	if (hdr->id) {
+		LOG_DBG("Sending back response!");
 		gb_operation_send_response(operation, result);
 	}
 	op_mark_send_time(operation);
@@ -387,12 +388,15 @@ static void *gb_pending_message_worker(void *data)
 	int retval;
 
 	while (1) {
+		LOG_ERR("HELLO FROM THREAD. CPORT: %u", cportid);
 		retval = sem_wait(&g_cport[cportid].rx_fifo_lock);
 		if (retval < 0) {
+			LOG_ERR("Retval < 0");
 			continue;
 		}
 
 		if (g_cport[cportid].exit_worker && sys_dlist_is_empty(&g_cport[cportid].rx_fifo)) {
+			LOG_ERR("Worker Exiting");
 			break;
 		}
 
@@ -404,15 +408,19 @@ static void *gb_pending_message_worker(void *data)
 		hdr = operation->request_buffer;
 
 		if (hdr == &timedout_hdr) {
+			LOG_ERR("Worker timed out!");
 			gb_clean_timedout_operation(cportid);
 			continue;
 		}
 
 		if (hdr->type & GB_TYPE_RESPONSE_FLAG) {
+			LOG_ERR("Worker processing response");
 			gb_process_response(hdr, operation);
 		} else {
+			LOG_ERR("Worker processing request");
 			gb_process_request(hdr, operation);
 		}
+		LOG_ERR("Worker destroying operation");
 		gb_operation_destroy(operation);
 	}
 
@@ -452,6 +460,7 @@ static struct gb_operation *gb_rx_create_operation(unsigned cport, void *data, s
 
 int greybus_rx_handler(unsigned int cport, void *data, size_t size)
 {
+	LOG_ERR("RX Handler");
 	int flags;
 	struct gb_operation *op;
 	struct gb_operation_hdr *hdr = data;
@@ -639,7 +648,7 @@ int _gb_register_driver(unsigned int cport, int bundle_id, struct gb_driver *dri
 		goto pthread_attr_init_error;
 	}
 
-	retval = pthread_attr_setstacksize(&thread_attr, driver->stack_size);
+	retval = pthread_attr_setstacksize(&thread_attr, 2048);
 	if (retval) {
 		LOG_ERR("pthread_attr_setstacksize() failed (%d)", retval);
 		goto pthread_attr_setstacksize_error;
@@ -653,9 +662,14 @@ int _gb_register_driver(unsigned int cport, int bundle_id, struct gb_driver *dri
 	}
 
 	snprintf(thread_name, sizeof(thread_name), "greybus[%u]", cport);
-	pthread_setname_np(g_cport[cport].thread, thread_name);
 
-	pthread_attr_destroy(&thread_attr);
+	LOG_ERR("Created thread greybus with cport %u", cport);
+
+	pthread_setname_np(g_cport[cport].thread, thread_name);
+	retval = pthread_attr_destroy(&thread_attr);
+	if (retval) {
+		LOG_ERR("pthread_attr_destroy() failed (%d)", retval);
+	}
 	thread_attr_ptr = NULL;
 
 	g_cport[cport].driver = driver;
@@ -677,6 +691,7 @@ pthread_attr_init_error:
 
 int gb_listen(unsigned int cport)
 {
+	LOG_ERR("gb_listen");
 	DEBUGASSERT(transport_backend);
 	DEBUGASSERT(transport_backend->listen);
 
@@ -695,6 +710,7 @@ int gb_listen(unsigned int cport)
 
 int gb_stop_listening(unsigned int cport)
 {
+	LOG_ERR("gb_stop_listening");
 	DEBUGASSERT(transport_backend);
 	DEBUGASSERT(transport_backend->stop_listening);
 
@@ -713,6 +729,7 @@ int gb_stop_listening(unsigned int cport)
 
 static void gb_operation_timeout(int argc, uint32_t cport, ...)
 {
+	LOG_ERR("gb_operation_timeout");
 	int flags;
 
 	flags = irq_lock();
@@ -730,6 +747,7 @@ static void gb_operation_timeout(int argc, uint32_t cport, ...)
 
 static int gb_operation_send_request_nowait_cb(int status, const void *buf, void *priv)
 {
+	LOG_ERR("gb_operation_send_request_nowait_cb");
 	struct gb_operation *operation = priv;
 	struct gb_operation_hdr *hdr = operation->request_buffer;
 
@@ -747,6 +765,7 @@ static int gb_operation_send_request_nowait_cb(int status, const void *buf, void
 int gb_operation_send_request_nowait(struct gb_operation *operation, gb_operation_callback callback,
 				     bool need_response)
 {
+	LOG_ERR("gb_operation_send_request_nowait");
 	struct gb_operation_hdr *hdr = operation->request_buffer;
 	int retval = 0;
 	int flags;
@@ -1084,6 +1103,7 @@ struct gb_bundle *gb_operation_get_bundle(struct gb_operation *operation)
 
 int gb_init(struct gb_transport_backend *transport)
 {
+	LOG_ERR("gb_init");
 	size_t num_bundles = manifest_get_max_bundle_id() + 1;
 	int i;
 
@@ -1122,6 +1142,7 @@ int gb_init(struct gb_transport_backend *transport)
 
 void gb_deinit(void)
 {
+	LOG_ERR("gb_deinit");
 	int i;
 
 	if (!transport_backend) {
@@ -1246,6 +1267,7 @@ error_buffer_alloc:
 
 int gb_notify(unsigned cport, enum gb_event event)
 {
+	LOG_ERR("GB EVENT!");
 	if (cport >= cport_count) {
 		return -EINVAL;
 	}

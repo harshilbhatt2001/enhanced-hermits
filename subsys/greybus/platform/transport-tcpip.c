@@ -565,10 +565,12 @@ static int sendMessage(int fd, struct gb_operation_hdr *msg)
 	size_t remaining;
 	size_t written;
 
+	LOG_DBG("gb: MSG Type: %02x", msg->type);
+
 	for (remaining = sys_le16_to_cpu(msg->size), offset = 0, written = 0; remaining;
 	     remaining -= written, offset += written, written = 0) {
 
-		LOG_DBG("gb: send(%d, %p, %zu, 0)", fd, &((uint8_t *)msg)[offset], remaining);
+		LOG_DBG("gb: send(%d, %p, %zu, 0)", fd, &((void *)msg)[offset], remaining);
 		r = send(fd, &((uint8_t *)msg)[offset], remaining, 0);
 
 		if (r < 0) {
@@ -675,6 +677,8 @@ static int netsetup(size_t num_cports)
 	int proto = IPPROTO_TCP;
 	struct sockaddr sa;
 	socklen_t sa_len;
+
+	LOG_ERR("Configuring Net!");
 
 	if (IS_ENABLED(CONFIG_GREYBUS_TLS_BUILTIN)) {
 		proto = IPPROTO_TLS_1_2;
@@ -800,7 +804,18 @@ struct gb_transport_backend *gb_transport_backend_init(size_t num_cports)
 		goto cleanup;
 	}
 
-	r = pthread_create(&accept_thread, NULL, service_thread, NULL);
+	pthread_attr_t thread_attr;
+	r = pthread_attr_init(&thread_attr);
+	if (r) {
+		LOG_ERR("pthread_attr_init() failed (%d)", r);
+	}
+
+	r = pthread_attr_setstacksize(&thread_attr, 2048);
+	if (r) {
+		LOG_ERR("pthread_attr_setstacksize() failed (%d)", r);
+	}
+
+	r = pthread_create(&accept_thread, &thread_attr, service_thread, NULL);
 	if (r != 0) {
 		LOG_ERR("pthread_create: %d", r);
 		goto cleanup;
