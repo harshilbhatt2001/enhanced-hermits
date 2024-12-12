@@ -10,26 +10,26 @@ manifest:
       url-base: https://openbeagle.org/gsoc/greybus/
   projects:
     - name: zephyr
-      # remote: zephyrproject-rtos
-      # revision: main
+      remote: zephyrproject-rtos
+      revision: main
       # remote: beagle-sdk
       # revision: sdk
-      remote: zephyrproject-cfriedt
-      revision: main
+      # remote: zephyrproject-cfriedt
+      # revision: main
       import: true
-    - name: hal_nordic
-      remote: zephyrproject-rtos
-      revision: 2dbb2ed6cf461062bbac59a65b6e9d4576656350
-      path: zephyr/modules/hal/nordic
-    - name: hal_espressif
-      remote: zephyrproject-rtos
-      revision: 81a71926d3b44c4a871a380d84345592817494fb
-      path: zephyr/modules/hal/espressif
-    - name: nrf_hw_models
-      remote: zephyrproject-rtos
-      revision: main
-      path: zephyr/modules/bsim_hw_models/nrf_hw_models
-    - name: cc1352-firmware
-      remote: beagle-gsoc
-      revision: main
-      import: false
+    # - name: hal_nordic
+    #   remote: zephyrproject-rtos
+    #   revision: 2dbb2ed6cf461062bbac59a65b6e9d4576656350
+    #   path: zephyr/modules/hal/nordic
+    # - name: hal_espressif
+    #   remote: zephyrproject-rtos
+    #   revision: d96a4e09f81187c9207f7441670f5e151b504683
+    #   path: zephyr/modules/hal/espressif
+    # - name: nrf_hw_models
+    #   remote: zephyrproject-rtos
+    #   revision: main
+    #   path: zephyr/modules/bsim_hw_models/nrf_hw_models
+    # - name: cc1352-firmware
+    #   remote: beagle-gsoc
+    #   revision: main
+    #   import: false

@@ -586,6 +586,11 @@ static int sendMessage(int fd, struct gb_operation_hdr *msg)
 		written = r;
 	}
 
+	if (msg->type == 0x84) {
+		r = 0;
+		LOG_DBG("gb: Sending manifest");
+	}
+
 	return 0;
 }
 

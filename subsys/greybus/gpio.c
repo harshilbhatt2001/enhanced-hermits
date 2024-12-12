@@ -537,6 +537,7 @@ static struct gb_operation_handler gb_gpio_handlers[] = {
 
 static int gb_gpio_init(unsigned int cport, struct gb_bundle *bundle)
 {
+	LOG_DBG("Initializing GPIO driver");
 	unsigned int cport_idx = cport - bundle->cport_start;
 
 	bundle->dev[cport_idx] = (struct device *)gb_cport_to_device(cport);
