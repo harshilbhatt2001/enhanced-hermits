@@ -21,10 +21,10 @@ manifest:
     #   remote: zephyrproject-rtos
     #   revision: 2dbb2ed6cf461062bbac59a65b6e9d4576656350
     #   path: zephyr/modules/hal/nordic
-    # - name: hal_espressif
-    #   remote: zephyrproject-rtos
-    #   revision: d96a4e09f81187c9207f7441670f5e151b504683
-    #   path: zephyr/modules/hal/espressif
+    - name: hal_espressif
+      remote: zephyrproject-rtos
+      revision: 81a71926d3b44c4a871a380d84345592817494fb1
+      path: zephyr/modules/hal/espressif
     # - name: nrf_hw_models
     #   remote: zephyrproject-rtos
     #   revision: main
