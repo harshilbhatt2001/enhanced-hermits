@@ -11,7 +11,7 @@ manifest:
   projects:
     - name: zephyr
       remote: zephyrproject-rtos
-      revision: main
+      revision: 7fa8bf17563bc57d37605a724da61786f7759c28
       # remote: beagle-sdk
       # revision: sdk
       # remote: zephyrproject-cfriedt
@@ -21,10 +21,10 @@ manifest:
     #   remote: zephyrproject-rtos
     #   revision: 2dbb2ed6cf461062bbac59a65b6e9d4576656350
     #   path: zephyr/modules/hal/nordic
-    - name: hal_espressif
-      remote: zephyrproject-rtos
-      revision: 81a71926d3b44c4a871a380d84345592817494fb1
-      path: zephyr/modules/hal/espressif
+    # - name: hal_espressif
+    #   remote: zephyrproject-rtos
+    #   revision: 8d35aa7075253ad0a9edd972590f224f1ab919ac
+    #   path: zephyr/modules/hal/espressif
     # - name: nrf_hw_models
     #   remote: zephyrproject-rtos
     #   revision: main
