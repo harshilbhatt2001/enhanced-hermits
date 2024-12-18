@@ -388,15 +388,12 @@ static void *gb_pending_message_worker(void *data)
 	int retval;
 
 	while (1) {
-		LOG_ERR("HELLO FROM THREAD. CPORT: %u", cportid);
 		retval = sem_wait(&g_cport[cportid].rx_fifo_lock);
 		if (retval < 0) {
-			LOG_ERR("Retval < 0");
 			continue;
 		}
 
 		if (g_cport[cportid].exit_worker && sys_dlist_is_empty(&g_cport[cportid].rx_fifo)) {
-			LOG_ERR("Worker Exiting");
 			break;
 		}
 
@@ -408,19 +405,15 @@ static void *gb_pending_message_worker(void *data)
 		hdr = operation->request_buffer;
 
 		if (hdr == &timedout_hdr) {
-			LOG_ERR("Worker timed out!");
 			gb_clean_timedout_operation(cportid);
 			continue;
 		}
 
 		if (hdr->type & GB_TYPE_RESPONSE_FLAG) {
-			LOG_ERR("Worker processing response");
 			gb_process_response(hdr, operation);
 		} else {
-			LOG_ERR("Worker processing request");
 			gb_process_request(hdr, operation);
 		}
-		LOG_ERR("Worker destroying operation");
 		gb_operation_destroy(operation);
 	}
 

@@ -104,6 +104,8 @@ static uint8_t gb_gpio_activate(struct gb_operation *operation)
 	unsigned int cport_idx = operation->cport - bundle->cport_start;
 	struct gb_gpio_activate_request *request = gb_operation_get_request_payload(operation);
 
+	LOG_DBG("GB_GPIO_ACTIVATE");
+
 	dev = bundle->dev[cport_idx];
 	if (dev == NULL) {
 		return GB_OP_INVALID;
@@ -252,15 +254,20 @@ static uint8_t gb_gpio_direction_out(struct gb_operation *operation)
 		return GB_OP_INVALID;
 	}
 
+	LOG_DBG("GPIO PIN CONFIGURE");
+
 	ret = gpio_pin_configure(dev, request->which, GPIO_OUTPUT);
 	if (ret != 0) {
 		return gb_errno_to_op_result(-ret);
 	}
 
+	LOG_DBG("GPIO PIN SET");
 	ret = gpio_pin_set(dev, request->which, request->value);
 	if (ret != 0) {
 		return gb_errno_to_op_result(-ret);
 	}
+
+	LOG_DBG("GPIO DONE");
 
 	return GB_OP_SUCCESS;
 }
